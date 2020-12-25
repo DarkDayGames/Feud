@@ -1,0 +1,14 @@
+﻿@using Feud.Server.Data
+
+
+<div>
+	@foreach (var strike in Strikes)
+	{
+		<StrikeListItem StrikeAnswer="strike"></StrikeListItem>
+	}
+</div>
+
+@code {
+	[Parameter]
+	public List<StrikeAnswer> Strikes { get; set; }
+}

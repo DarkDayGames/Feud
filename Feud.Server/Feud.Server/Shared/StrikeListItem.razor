@@ -1,0 +1,21 @@
+﻿@using Feud.Server.Data
+
+@if (StrikeAnswer.StrikeVisible)
+{
+	<div>
+		X
+	</div>
+}
+else
+{
+	<div>
+		&nbsp;
+	</div>
+}
+
+@code {
+
+	[Parameter]
+	public StrikeAnswer StrikeAnswer { get; set; }
+
+}

@@ -1,0 +1,13 @@
+﻿@using Feud.Server.Data
+<div>
+	@foreach (var answer in Answers)
+	{
+		<AnswerListItem Answer="answer"></AnswerListItem>
+	}
+</div>
+
+@code {
+
+	[Parameter]
+	public List<QuestionAnswer> Answers { get; set; }
+}

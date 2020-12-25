@@ -1,0 +1,50 @@
+﻿@page "/"
+@using System.Net.Mime
+@using Feud.Server.Data
+
+
+@if (_board != null)
+{
+	<Board QuestionBoard="_board"></Board>
+	<HostPanel QuestionBoard="_board"></HostPanel>
+}
+
+@code{
+
+	private QuestionBoard _board;
+
+
+	protected override void OnInitialized()
+	{
+		_board = new QuestionBoard
+		{
+			Name = "Tadpooly Feud",
+			Question = "Most Colorful Animals",
+			Answers = new List<QuestionAnswer>
+			{
+				new QuestionAnswer {Number = 1, Text = "Apricot Anteaters", Points = 45},
+				new QuestionAnswer {Number = 2, Text = "Blue Baboons", Points = 25},
+				new QuestionAnswer {Number = 3, Text = "Crimson Crabs", Points = 15},
+				new QuestionAnswer {Number = 4, Text = "Daffodil Deer", Points = 8},
+				new QuestionAnswer {Number = 5, Text = "Ecrue Emus", Points = 3},
+				new QuestionAnswer {Number = 6, Text = "Fuscia Flamingos", Points = 3},
+				new QuestionAnswer {Number = 7, Text = "Green Gophers", Points = 1},
+				new QuestionAnswer {Number = 8},
+				new QuestionAnswer {Number = 9},
+				new QuestionAnswer {Number = 10}
+			},
+			Strikes = new List<StrikeAnswer>
+			{
+				new StrikeAnswer(),
+				new StrikeAnswer(),
+				new StrikeAnswer(),
+			},
+			GuestUrl = "https://google.ca"
+		};
+	}
+
+	
+
+
+
+}

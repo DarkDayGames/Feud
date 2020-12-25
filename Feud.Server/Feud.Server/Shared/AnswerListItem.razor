@@ -1,0 +1,27 @@
+﻿@using Feud.Server.Data
+
+@if (Answer == null || !Answer.AnswerAvailable)
+{
+	<div style="border: black; border-width: 1px; border-style: solid">
+		&nbsp;
+	</div>
+}
+else if (!Answer.AnswerVisible)
+{
+	<div style="border: black; border-width: 1px; border-style: solid">
+		@Answer.Number
+	</div>
+}
+else
+{
+	<div style="border: blue; border-width: 1px; border-style: solid">
+		@Answer.Text - @Answer.Points
+	</div>
+}
+
+
+@code {
+
+	[Parameter]
+	public QuestionAnswer Answer { get; set; }
+}

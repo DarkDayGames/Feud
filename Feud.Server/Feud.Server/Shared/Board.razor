@@ -1,0 +1,19 @@
+﻿@using Feud.Server.Data
+<div>
+	<div>
+		<h1>@QuestionBoard.Name</h1>
+	</div>
+	<div>
+		<span>@QuestionBoard.Question</span>
+	</div>
+	<div>
+		<span>@QuestionBoard.TotalPoints</span>	
+	</div>
+	<StrikeList Strikes="QuestionBoard.Strikes"></StrikeList>
+	<AnswerList Answers="QuestionBoard.Answers"></AnswerList>
+</div>
+
+@code {
+	[Parameter]
+	public QuestionBoard QuestionBoard { get; set; }
+}
