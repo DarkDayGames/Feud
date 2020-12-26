@@ -53,7 +53,7 @@
 						Each answer on one row, in the correct order 1-10.<br />
 						Optionally add the points after the answer, separated by a comma.<br />
 						5000 char max.<br />
-						Max 10 answers.<br />
+						Only the first 10 rows will be used.<br />
 						Example:<br />
 						Pizza,45<br />
 						Hamburgers,37<br />
@@ -99,6 +99,11 @@
 
 		foreach (var answerLine in answerLines)
 		{
+			if (answerNumber > 10)
+			{
+				break;
+			}
+
 			if (!string.IsNullOrEmpty(answerLine))
 			{
 				var values = answerLine.Split(',');
@@ -112,6 +117,14 @@
 
 				board.Answers.Add(answer);
 			}
+		}
+
+		for(var i = answerNumber; i <= 10; i++)
+		{
+			board.Answers.Add(new QuestionAnswer
+			{
+				Number = i
+			});
 		}
 
 		FeudHostService.AddBoard(board);

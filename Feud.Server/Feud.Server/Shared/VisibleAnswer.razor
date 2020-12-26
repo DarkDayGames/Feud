@@ -3,9 +3,12 @@
 	<div class="answer-item-text">
 		@Answer.Text
 	</div>
-	<div class="answer-item-points">
-		@Answer.Points
-	</div>
+	@if (Answer.Points > 0)
+	{
+		<div class="answer-item-points">
+			@Answer.Points
+		</div>
+	}
 </div>
 @code {
 	[Parameter] 
