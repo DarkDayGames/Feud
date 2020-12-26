@@ -1,0 +1,116 @@
+﻿@page "/feud/host/{id}"
+@using Feud.Server.Data
+@using Feud.Server.Services
+@inject IFeudHostService FeudHostService
+
+@if (_board != null)
+{
+	<h3>Feud Host</h3>
+	<div class="hostpage">
+		<div class="hostpage-guest">
+			<h4>Guest View</h4>
+			<Board QuestionBoard="_board"></Board>
+		</div>
+		<div class="hostpage-host">
+			<h4>Host View</h4>
+			<HostPanel QuestionBoard="_board"></HostPanel>
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string Id { get; set; }
+
+	public QuestionBoard _board { get; set; }
+
+	protected override void OnInitialized()
+	{
+		if (Id == "aabbccddeeff")
+		{
+			_board = new QuestionBoard
+			{
+				Id = "aabbccddeeff",
+				GuestId = "aabbccddeeff",
+				Name = "Tadpooly Feud",
+				Question = "Most Colorful Animals",
+				Answers = new List<QuestionAnswer>
+				{
+					new QuestionAnswer {Number = 1, Text = "Apricot Anteaters", Points = 45},
+					new QuestionAnswer {Number = 2, Text = "Blue Baboons", Points = 25},
+					new QuestionAnswer {Number = 3, Text = "Crimson Crabs", Points = 15},
+					new QuestionAnswer {Number = 4, Text = "Daffodil Deer", Points = 8},
+					new QuestionAnswer {Number = 5, Text = "Ecrue Emus", Points = 3},
+					new QuestionAnswer {Number = 6, Text = "Fuscia Flamingos", Points = 3},
+					new QuestionAnswer {Number = 7, Text = "Green Gophers", Points = 1},
+					new QuestionAnswer {Number = 8, Text = "Hadish Hornets", Points = 1},
+					new QuestionAnswer {Number = 9, Text = "Indigo Iguanas", Points = 1},
+					new QuestionAnswer {Number = 10, Text = "Jasmine Juniper Bugs", Points = 1}
+				},
+				Strikes = new List<StrikeAnswer>
+				{
+					new StrikeAnswer(),
+					new StrikeAnswer(),
+					new StrikeAnswer(),
+				}
+			};
+
+			FeudHostService.AddBoard(_board);
+		}
+		else
+		{
+			_board = FeudHostService.GetBoardForHost(Id);
+		}
+
+		FeudHostService.AnswerToggled += ToggleAnswer;
+		FeudHostService.StrikeToggled += ToggleStrike;
+		FeudHostService.BoardReset += Reset;
+	}
+
+	public void Dispose()
+	{
+		FeudHostService.AnswerToggled -= ToggleAnswer;
+		FeudHostService.StrikeToggled -= ToggleStrike;
+		FeudHostService.BoardReset -= Reset;
+	}
+
+
+
+	protected void ToggleAnswer(object sender, BoardChangedEventArgs e)
+	{
+		var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
+
+		if (answer != null)
+		{
+			answer.AnswerVisible = !answer.AnswerVisible;
+
+			InvokeAsync(StateHasChanged);
+		}
+	}
+
+	protected void ToggleStrike(object sender, BoardChangedEventArgs e)
+	{
+		_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
+
+		InvokeAsync(StateHasChanged);
+	}
+
+	protected void Reset(object sender, BoardChangedEventArgs e)
+	{
+		foreach (var answer in _board.Answers)
+		{
+			if (answer.AnswerAvailable)
+			{
+				answer.AnswerVisible = false;
+			}
+		}
+
+		foreach (var strike in _board.Strikes)
+		{
+			strike.StrikeVisible = false;
+		}
+
+		InvokeAsync(StateHasChanged);
+	}
+
+}

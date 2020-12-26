@@ -1,8 +1,15 @@
 ﻿@using Feud.Server.Data
-<div>
-	@foreach (var answer in Answers)
+<div class="answer-list">
+	@for(var i = 0; i < Answers.Count / 2; i++)
 	{
-		<AnswerListItem Answer="answer"></AnswerListItem>
+		var index = i;
+		<div class="answer-pair" >
+			<AnswerListItem Answer="Answers[index]"></AnswerListItem>
+			@if (index + 5 < Answers.Count)
+			{
+				<AnswerListItem Answer="Answers[index + 5]"></AnswerListItem>
+			}
+		</div>
 	}
 </div>
 

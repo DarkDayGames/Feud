@@ -1,0 +1,26 @@
+﻿@using Feud.Server.Data
+@using Feud.Server.Services
+@inject IFeudHostService FeudHostService
+
+@if (Answer.AnswerAvailable)
+{
+	<div class="host-answer-item">
+		<span>@Answer.Number</span>
+		<button class="@(Answer.AnswerVisible ? "answer-shown" : "answer-hidden")" @onclick="@(e => ToggleAnswer(Answer.Number))">@(Answer.AnswerVisible ? "Hide" : "Show")</button>
+		<VisibleAnswer Answer="@Answer"></VisibleAnswer>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string BoardId { get; set; }
+
+	[Parameter]
+	public QuestionAnswer Answer { get; set; }
+
+	protected void ToggleAnswer(int number)
+	{
+		FeudHostService.ToggleAnswer(BoardId, number);
+	}
+
+}

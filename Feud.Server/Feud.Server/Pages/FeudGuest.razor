@@ -1,0 +1,75 @@
+﻿@page "/feud/guest/{id}"
+@using Feud.Server.Data
+@using Feud.Server.Services
+@inject IFeudHostService FeudHostService
+
+@if (_board != null)
+{
+	<h3>Guest</h3>	
+	<div>
+		<Board QuestionBoard="_board"></Board>
+	</div>
+}
+
+
+@code {
+	[Parameter]
+	public string Id { get; set; }
+
+	public QuestionBoard _board { get; set; }
+
+	protected override void OnInitialized()
+	{
+		_board = FeudHostService.GetBoardForGuest(Id);
+		
+		FeudHostService.AnswerToggled += ToggleAnswer;
+		FeudHostService.StrikeToggled += ToggleStrike;
+		FeudHostService.BoardReset += Reset;
+	}
+
+	public void Dispose()
+	{
+		FeudHostService.AnswerToggled -= ToggleAnswer;
+		FeudHostService.StrikeToggled -= ToggleStrike;
+		FeudHostService.BoardReset -= Reset;
+	}
+
+
+	protected void ToggleAnswer(object sender, BoardChangedEventArgs e)
+	{
+		var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
+
+		if (answer != null)
+		{
+			answer.AnswerVisible = !answer.AnswerVisible;
+
+			InvokeAsync(StateHasChanged);
+		}
+	}
+
+	protected void ToggleStrike(object sender, BoardChangedEventArgs e)
+	{
+		_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
+
+		InvokeAsync(StateHasChanged);
+	}
+
+	protected void Reset(object sender, BoardChangedEventArgs e)
+	{
+		foreach (var answer in _board.Answers)
+		{
+			if (answer.AnswerAvailable)
+			{
+				answer.AnswerVisible = false;
+			}
+		}
+
+		foreach (var strike in _board.Strikes)
+		{
+			strike.StrikeVisible = false;
+		}
+
+		InvokeAsync(StateHasChanged);
+	}
+
+}

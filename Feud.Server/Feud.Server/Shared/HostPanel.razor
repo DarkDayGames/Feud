@@ -1,68 +1,62 @@
 ﻿@using Feud.Server.Data
+@using Feud.Server.Services
 @inject IJSRuntime JSRuntime
+@inject IFeudHostService FeudHostService
 
-<h3>Host</h3>
-<div>
-	<a href="@QuestionBoard.GuestUrl" target="_blank">@QuestionBoard.GuestUrl</a>
-	<button @onclick="CopyGuestUrlToClipboard">Copy Url</button>
-</div>
-<div>
-	@foreach (var answer in QuestionBoard.Answers)
-	{
-		@if (answer.AnswerAvailable)
+<div class="host-panel">
+	<div>
+		<span>Guest Url</span>
+		<a href="@QuestionBoard.GuestUrl" target="_blank">@QuestionBoard.GuestUrl</a>
+		<button @onclick="CopyGuestUrlToClipboard">Copy Url</button>
+	</div>
+	<div class="vert-gap"></div>
+	<div class="answer-list">
+		@for (var i = 0; i < QuestionBoard.Answers.Count / 2; i++)
 		{
-			<div>
-				<button @onclick="@(e => ToggleAnswer(answer.Number))">@(answer.AnswerVisible ? "Hide" : "Show")</button>
-				<div>
-					@answer.Text - @answer.Points
-				</div>
+			var index = i;
+			var answer = QuestionBoard.Answers[index];
+
+			<div class="answer-pair">
+				<HostAnswerListItem BoardId="@QuestionBoard.Id" Answer="QuestionBoard.Answers[index]"></HostAnswerListItem>
+
+				@if (index + 5 < QuestionBoard.Answers.Count)
+				{
+					<HostAnswerListItem BoardId="@QuestionBoard.Id" Answer="QuestionBoard.Answers[index + 5]"></HostAnswerListItem>
+				}
 			</div>
 		}
-	}
-	@for (int i = 0; i < QuestionBoard.Strikes.Count; i++)
-	{
-		var index = i;
+	</div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div class="strike-list">
+		@for (int i = 0; i < QuestionBoard.Strikes.Count; i++)
+		{
+			var index = i;
 
-		<div>
-			<button @onclick="@(e => ToggleStrike(index))">Strike @(index+1)</button>
-		</div>
-	}
-	<button @onclick="Reset">Reset</button>
+			<div class="strike-list-item">
+				<button class="@(QuestionBoard.Strikes[index].StrikeVisible ? "strike-shown" : "strike-hidden")" @onclick="@(e => ToggleStrike(index))">Strike @(index+1)</button>
+			</div>
+		}
+	</div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div>
+		<button @onclick="Reset">Reset</button>
+	</div>
 </div>
 
 @code {
 	[Parameter]
 	public QuestionBoard QuestionBoard { get; set; }
 
-	protected void ToggleAnswer(int number)
-	{
-		var answer = QuestionBoard.Answers.FirstOrDefault(x => x.Number == number);
-
-		if (answer != null)
-		{
-			answer.AnswerVisible = !answer.AnswerVisible;
-		}
-	}
-
 	protected void ToggleStrike(int index)
 	{
-		QuestionBoard.Strikes[index].StrikeVisible = !QuestionBoard.Strikes[index].StrikeVisible;
+		FeudHostService.ToggleStrike(QuestionBoard.Id, index);
 	}
 
 	protected void Reset()
 	{
-		foreach (var answer in QuestionBoard.Answers)
-		{
-			if (answer.AnswerAvailable)
-			{
-				answer.AnswerVisible = false;
-			}
-		}
-
-		foreach (var strike in QuestionBoard.Strikes)
-		{
-			strike.StrikeVisible = false;
-		}
+		FeudHostService.Reset(QuestionBoard.Id);
 	}
 
 	private async Task CopyGuestUrlToClipboard()

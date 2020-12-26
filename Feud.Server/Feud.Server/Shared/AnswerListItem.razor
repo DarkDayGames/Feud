@@ -2,21 +2,19 @@
 
 @if (Answer == null || !Answer.AnswerAvailable)
 {
-	<div style="border: black; border-width: 1px; border-style: solid">
+	<div class="answer-item">
 		&nbsp;
 	</div>
 }
 else if (!Answer.AnswerVisible)
 {
-	<div style="border: black; border-width: 1px; border-style: solid">
-		@Answer.Number
+	<div class="answer-item answer-item-hidden">
+		<div>@Answer.Number</div>
 	</div>
 }
 else
 {
-	<div style="border: blue; border-width: 1px; border-style: solid">
-		@Answer.Text - @Answer.Points
-	</div>
+	<VisibleAnswer Answer="@Answer"></VisibleAnswer>
 }
 
 

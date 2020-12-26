@@ -181,3 +181,124 @@ app {
         display: block;
     }
 }
+
+
+/* *********************************************************************** */
+.hostpage {
+	display: flex;
+	flex-direction: row;
+}
+
+
+.hostpage-guest {
+	margin-right: 20px;
+}
+
+
+.answer-list {
+	display: flex; 
+	flex-direction: column;
+}
+
+.answer-pair {
+	display: flex; 
+	flex-direction: row;
+}
+
+.answer-item {
+	border: black;
+	border-width: 1px;
+	border-style: solid;
+	margin: 5px;
+	width: 300px;
+	min-height: 50px;
+	align-content: center;
+}
+
+.answer-item-visible {
+    border: blue;
+    border-width: 1px;
+    border-style: solid;
+    margin: 5px;
+	width: 300px;
+	min-height: 50px;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.answer-item-hidden {
+    align-items: center;
+    justify-content: center;
+	text-align: center;
+}
+
+
+.answer-item-text {
+	flex: 1 0 90%;
+	height: available;
+}
+
+.answer-item-points {
+	border-left: 1px solid blue;
+	width: 30px;
+	height: available;
+}
+
+
+.host-panel {
+	display: flex;
+	flex-direction: column;
+}
+
+.host-answer-item {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.host-answer-item span {
+	width: 20px;
+}
+
+.host-answer-item button {
+	width: 60px;
+	height: 30px;
+}
+
+.answer-hidden {
+
+}
+.answer-shown {
+	background-color: #26b050;
+}
+
+.strike-list { 
+	display: flex;
+	flex-direction: row;
+}
+
+.strike-list-item {
+    margin-right: 10px;
+	font-weight: bold;
+	color: red
+}
+
+.strike-list-item button {
+	
+}
+
+.strike-hidden {
+
+}
+
+.strike-shown {
+	background-color: red;
+}
+
+.vert-gap {
+	height: 5px;
+}
+
+

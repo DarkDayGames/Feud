@@ -7,13 +7,28 @@ namespace Feud.Server.Data
 {
 	public class QuestionBoard
 	{
+		public string Id { get; set;}
 		public string Name { get; set; }
 		public string Question { get; set; }
 		public List<QuestionAnswer> Answers { get; set; }
 		public List<StrikeAnswer> Strikes { get; set; }
-		public int TotalPoints => Answers.Where(x => x.AnswerVisible).Sum(x => x.Points);
+		public int TotalPoints => Answers?.Where(x => x.AnswerVisible).Sum(x => x.Points) ?? 0;
 
-		public string GuestUrl { get; set; }
+		public string GuestId { get; set; }
+		public string GuestUrl => $"feud/guest/{GuestId}";
+
+		public QuestionBoard()
+		{
+			Id = Guid.NewGuid().ToString();
+			Answers = new List<QuestionAnswer>();
+			Strikes = new List<StrikeAnswer>
+			{
+				new StrikeAnswer(),
+				new StrikeAnswer(),
+				new StrikeAnswer()
+			};
+			GuestId = Guid.NewGuid().ToString();
+		}
 	}
 
 	public class QuestionAnswer

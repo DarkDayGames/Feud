@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Feud.Server.Services;
 
 namespace Feud.Server
 {
@@ -29,6 +30,7 @@ namespace Feud.Server
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddSingleton<WeatherForecastService>();
+			services.AddSingleton<IFeudHostService, FeudHostService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

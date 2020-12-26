@@ -1,0 +1,13 @@
+﻿@using Feud.Server.Data
+<div  class="answer-item-visible">
+	<div class="answer-item-text">
+		@Answer.Text
+	</div>
+	<div class="answer-item-points">
+		@Answer.Points
+	</div>
+</div>
+@code {
+	[Parameter] 
+	public QuestionAnswer Answer { get; set; }
+}
