@@ -14,6 +14,8 @@ namespace Feud.Server.Data
 		public List<StrikeAnswer> Strikes { get; set; }
 		public int TotalPoints => Answers?.Where(x => x.AnswerVisible).Sum(x => x.Points) ?? 0;
 
+		public int AnswerCount => Answers.Count(x => !string.IsNullOrEmpty(x.Text));
+
 		public string GuestId { get; set; }
 		public string GuestUrl => $"feud/guest/{GuestId}";
 
