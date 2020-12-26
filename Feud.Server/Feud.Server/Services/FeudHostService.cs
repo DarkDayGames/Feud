@@ -40,7 +40,15 @@ namespace Feud.Server.Services
 
 		public void AddBoard(QuestionBoard newBoard)
 		{
-			Boards.Add(newBoard);
+			try
+			{
+				Boards.Add(newBoard);
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
 		}
 
 		public List<QuestionBoard> GetBoardsForHost()
@@ -50,27 +58,66 @@ namespace Feud.Server.Services
 
 		public QuestionBoard GetBoardForHost(string boardId)
 		{
-			return Boards.FirstOrDefault(x => x.Id == boardId);
+			try
+			{
+				return Boards.FirstOrDefault(x => x.Id == boardId);
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
 		}
 
 		public QuestionBoard GetBoardForGuest(string boardGuestId)
 		{
-			return Boards.FirstOrDefault(x => x.GuestId == boardGuestId);
+			try 
+			{ 
+				return Boards.FirstOrDefault(x => x.GuestId == boardGuestId);
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
 		}
 
 		public void ToggleAnswer(string boardId, int number)
 		{
-			AnswerToggled?.Invoke(this, new BoardChangedEventArgs{BoardId = boardId, ItemChangedNumber = number});
+			try
+			{
+				AnswerToggled?.Invoke(this, new BoardChangedEventArgs {BoardId = boardId, ItemChangedNumber = number});
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
 		}
 
 		public void ToggleStrike(string boardId, int index)
 		{
-			StrikeToggled?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId, ItemChangedNumber = index });
+			try 
+			{ 
+				StrikeToggled?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId, ItemChangedNumber = index });
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
 		}
 
 		public void Reset(string boardId)
 		{
-			BoardReset?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId});
+			try { 
+				BoardReset?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId});
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
 		}
 	}
 }

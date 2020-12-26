@@ -1,5 +1,6 @@
 ﻿@using Feud.Server.Data
 @using Feud.Server.Services
+@using Microsoft.Extensions.Logging
 @inject IFeudHostService FeudHostService
 
 @if (Answer.AnswerAvailable)
@@ -20,7 +21,14 @@
 
 	protected void ToggleAnswer(int number)
 	{
-		FeudHostService.ToggleAnswer(BoardId, number);
+		try
+		{
+			FeudHostService.ToggleAnswer(BoardId, number);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+		}
 	}
 
 }

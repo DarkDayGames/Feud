@@ -13,8 +13,14 @@ namespace Feud.Server
 {
 	public class Program
 	{
+
+		public static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
 		public static void Main(string[] args)
 		{
+			Logger.Log(NLog.LogLevel.Info, "--------------------------------------------");
+			Logger.Log(NLog.LogLevel.Info, "Running Feud.Server...");
+
 			CreateHostBuilder(args).Build().Run();
 		}
 

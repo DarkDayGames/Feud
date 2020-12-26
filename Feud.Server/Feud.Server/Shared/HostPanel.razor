@@ -54,16 +54,40 @@
 
 	protected void ToggleStrike(int index)
 	{
-		FeudHostService.ToggleStrike(QuestionBoard.Id, index);
+		try
+		{
+			FeudHostService.ToggleStrike(QuestionBoard.Id, index);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			throw;
+		}
 	}
 
 	protected void Reset()
 	{
-		FeudHostService.Reset(QuestionBoard.Id);
+		try
+		{
+			FeudHostService.Reset(QuestionBoard.Id);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			throw;
+		}
 	}
 
 	private async Task CopyGuestUrlToClipboard()
 	{
-		await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", FullGuestUrl);
+		try
+		{
+			await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", FullGuestUrl);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			throw;
+		}
 	}
 }
