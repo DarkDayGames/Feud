@@ -1,0 +1,16 @@
+﻿@using Feud.Server.Data
+<div class="answer-item-edit">
+	<div>
+		@Answer.Number	
+	</div>
+	<div class="input-set">
+		<input class="input-answer-text" @bind="Answer.Text" type="text" maxlength="200"/>
+	</div>
+	<div class="input-set">
+		<input class="input-answer-points" @bind="Answer.Points" type="text" maxlength="3"/>
+	</div>
+</div>
+@code {
+	[Parameter]
+	public QuestionAnswer Answer { get; set; }
+}

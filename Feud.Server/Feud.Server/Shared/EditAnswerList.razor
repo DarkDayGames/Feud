@@ -1,0 +1,26 @@
+﻿@using Feud.Server.Data
+<div class="answer-list">
+	<div class="answer-item-edit">
+		<div>
+			#
+		</div>
+		<div class="input-answer-text">
+			Text (200 char max)
+		</div>
+		<div class="input-answer-points">
+			Points
+		</div>
+	</div>
+	@for (var i = 0; i < Answers.Count; i++)
+	{
+		var index = i;
+		<div>
+			<EditAnswer Answer="Answers[index]"></EditAnswer>
+		</div>
+	}
+</div>
+
+@code {
+	[Parameter]
+	public List<QuestionAnswer> Answers { get; set; }
+}

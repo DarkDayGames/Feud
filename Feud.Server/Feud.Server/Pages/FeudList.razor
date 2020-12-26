@@ -47,20 +47,46 @@
 			</div>
 			<div class="input-set">
 				<div class="input-label">Answers</div>
-				<textarea @bind="_newBoard.AnswerBlob" maxlength="5000"></textarea>
-				<div class="input-note">
-					<p>
-						Each answer on one row, in the correct order 1-10.<br />
-						Optionally add the points after the answer, separated by a comma.<br />
-						5000 char max.<br />
-						Only the first 10 rows will be used.<br />
-						Example:<br />
-						Pizza,45<br />
-						Hamburgers,37<br />
-						Hot Dogs,15
-					</p>
+				<div class="create-answers">
+					<div name="header" class="create-answers-header">
+						<div><a style="color: #0366d6;" @onclick="SelectImportTab">Import</a></div>
+						<div><a style="color: #0366d6;" @onclick="SelectEditTab">Edit</a></div>
+					</div>
+
+					@if (CurrentTab == TabKeys.Import)
+					{
+						<div name="import" class="create-answers-import">
+							<div class="create-answers-import-blob">
+								<textarea @bind="_newBoard.AnswerBlob" maxlength="5000"></textarea>
+								<div class="input-note">
+									<p>
+										Each answer on one row, in the correct order 1-10.<br />
+										Optionally add the points after the answer, separated by a comma.<br />
+										5000 char max.<br />
+										Only the first 10 rows will be used.<br />
+										Example:<br />
+										Pizza,45<br />
+										Hamburgers,37<br />
+										Hot Dogs,15
+									</p>
+								</div>
+							</div>
+							<div>
+								<button @onclick="ImportAnswers">Import</button>
+							</div>
+						</div>	
+					}
+					@if (CurrentTab == TabKeys.Edit)
+					{
+						<div name="edit" class="create-answers-edit">
+							<EditAnswerList Answers="_newBoard.Answers"></EditAnswerList>
+						</div>
+					}
 				</div>
+				
 			</div>
+			<div class="vert-gap"></div>
+			<div class="vert-gap"></div>
 			<div>
 				<button @onclick="CreateBoard">Create</button>
 			</div>
@@ -69,12 +95,17 @@
 }
 
 @code {
+
+	public string CurrentTab { get; set; }
+
 	public NewBoardViewModel _newBoard { get; set; }
 
 	public List<QuestionBoard> _boards { get; set; }
 
 	protected override void OnInitialized()
 	{
+		SelectImportTab();
+
 		_newBoard = new NewBoardViewModel();
 
 		_boards = FeudHostService.GetBoardsForHost();
@@ -90,12 +121,23 @@
 		var board = new QuestionBoard
 		{
 			Name = _newBoard.Name,
-			Question = _newBoard.Question
+			Question = _newBoard.Question,
+			Answers = _newBoard.Answers
 		};
 
+
+
+		FeudHostService.AddBoard(board);
+		NavigationManager.NavigateTo($"feud/host/{board.Id}");
+
+	}
+
+	protected void ImportAnswers()
+	{
 		var answerLines = _newBoard.AnswerBlob.Split("\n");
 
 		var answerNumber = 1;
+		var newAnswers = new List<QuestionAnswer>();
 
 		foreach (var answerLine in answerLines)
 		{
@@ -115,29 +157,56 @@
 					Points = values.Length > 1 ? int.Parse(values[1]) : 0
 				};
 
-				board.Answers.Add(answer);
+				newAnswers.Add(answer);
 			}
 		}
 
-		for(var i = answerNumber; i <= 10; i++)
+		for (var i = answerNumber; i <= 10; i++)
 		{
-			board.Answers.Add(new QuestionAnswer
+			newAnswers.Add(new QuestionAnswer
 			{
 				Number = i
 			});
 		}
 
-		FeudHostService.AddBoard(board);
-		NavigationManager.NavigateTo($"feud/host/{board.Id}");
+		_newBoard.Answers = newAnswers;
 
+		SelectEditTab();
+	}
+
+	public void SelectImportTab()
+	{
+		CurrentTab = TabKeys.Import;
+	}
+
+	public void SelectEditTab()
+	{
+		CurrentTab = TabKeys.Edit;
 	}
 
 
+
+	public static class TabKeys
+	{
+		public const string Import = "import";
+		public const string Edit = "edit";
+	}
 
 	public class NewBoardViewModel
 	{
 		public string Name { get; set; }
 		public string Question { get; set; }
 		public string AnswerBlob { get; set; }
+
+		public List<QuestionAnswer> Answers { get; set; }
+
+		public NewBoardViewModel()
+		{
+			Answers = new List<QuestionAnswer>();
+			for (var i = 1; i <= 10; i++)
+			{
+				Answers.Add(new QuestionAnswer {Number = i});
+			}
+		}
 	}
 }

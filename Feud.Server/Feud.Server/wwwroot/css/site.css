@@ -398,3 +398,50 @@ textarea {
 	margin-left: 10px;
 }
 
+.answer-item-edit {
+	display: flex;
+	flex-direction: row;
+}
+
+.answer-item-edit div:first-child {
+	width: 20px;
+}
+
+.input-answer-text {
+	width: 400px;
+	margin-right: 10px;
+}
+
+.input-answer-points {
+	width: 50px;
+}
+
+.create-answers {
+	display: flex;
+	flex-direction: column;
+}
+
+.create-answers-header {
+	display: flex;
+	flex-direction: row;
+}
+
+.create-answers-header div {
+    margin-right: 20px;
+}
+
+.create-answers-import {
+	display: flex;
+	flex-direction: column;
+}
+
+.create-answers-import-blob {
+	display: flex;
+    flex-direction: row;
+	margin-bottom: 10px;
+}
+
+.create-answers-edit {
+
+}
+
