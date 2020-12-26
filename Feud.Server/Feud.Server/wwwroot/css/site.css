@@ -212,7 +212,9 @@ app {
 	margin: 5px;
 	width: 300px;
 	min-height: 50px;
-	align-content: center;
+
+	display: flex;
+	align-items: center;
 }
 
 .answer-item-visible {
@@ -348,6 +350,16 @@ textarea {
 
 .input-text {
 	width: 500px;
+}
+
+.board-div {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+.guest-board {
+	width: 620px;
 }
 
 

@@ -1,12 +1,12 @@
 ﻿@using Feud.Server.Data
-<div>
-	<div>
+<div class="guest-board">
+	<div class="board-div">
 		<h1>@QuestionBoard.Name</h1>
 	</div>
-	<div>
+	<div class="board-div">
 		<span>@QuestionBoard.Question</span>
 	</div>
-	<div>
+	<div class="board-div">
 		<span>@QuestionBoard.TotalPoints</span>	
 	</div>
 	<StrikeList Strikes="QuestionBoard.Strikes"></StrikeList>
