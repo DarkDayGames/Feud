@@ -358,6 +358,7 @@ app {
 
 textarea {
 	width: 500px;
+	height: 300px;
 }
 
 .input-set {
@@ -389,4 +390,11 @@ textarea {
 	margin-left: 20px;
 }
 
+.guest-url span{
+	margin-right: 10px;
+}
+
+.input-note {
+	margin-left: 10px;
+}
 

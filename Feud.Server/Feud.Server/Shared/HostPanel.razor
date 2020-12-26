@@ -2,11 +2,12 @@
 @using Feud.Server.Services
 @inject IJSRuntime JSRuntime
 @inject IFeudHostService FeudHostService
+@inject NavigationManager NavigationManager
 
 <div class="host-panel">
-	<div>
+	<div class="guest-url">
 		<span>Guest Url</span>
-		<a href="@QuestionBoard.GuestUrl" target="_blank">@QuestionBoard.GuestUrl</a>
+		<a href="@FullGuestUrl" target="_blank">@FullGuestUrl</a>
 		<button @onclick="CopyGuestUrlToClipboard">Copy Url</button>
 	</div>
 	<div class="vert-gap"></div>
@@ -49,6 +50,8 @@
 	[Parameter]
 	public QuestionBoard QuestionBoard { get; set; }
 
+	public string FullGuestUrl => NavigationManager.BaseUri + QuestionBoard.GuestUrl;
+
 	protected void ToggleStrike(int index)
 	{
 		FeudHostService.ToggleStrike(QuestionBoard.Id, index);
@@ -61,6 +64,6 @@
 
 	private async Task CopyGuestUrlToClipboard()
 	{
-		await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", QuestionBoard.GuestUrl);
+		await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", FullGuestUrl);
 	}
 }

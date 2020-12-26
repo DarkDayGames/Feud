@@ -38,14 +38,28 @@
 			<div class="input-set">
 				<div class="input-label">Name</div>
 				<input class="input-text" @bind="_newBoard.Name" type="text" maxlength="50" />
+				<div class="input-note">50 char max</div>
 			</div>
 			<div class="input-set">
 				<div class="input-label">Question</div>
 				<input class="input-text" @bind="_newBoard.Question" type="text" maxlength="200" />
+				<div class="input-note">200 char max</div>
 			</div>
 			<div class="input-set">
 				<div class="input-label">Answers</div>
 				<textarea @bind="_newBoard.AnswerBlob" maxlength="5000"></textarea>
+				<div class="input-note">
+					<p>
+						Each answer on one row, in the correct order 1-10.<br />
+						Optionally add the points after the answer, separated by a comma.<br />
+						5000 char max.<br />
+						Max 10 answers.<br />
+						Example:<br />
+						Pizza,45<br />
+						Hamburgers,37<br />
+						Hot Dogs,15
+					</p>
+				</div>
 			</div>
 			<div>
 				<button @onclick="CreateBoard">Create</button>
@@ -66,9 +80,9 @@
 		_boards = FeudHostService.GetBoardsForHost();
 
 		//TEST ONLY
-		_newBoard.Name = "Tadpooly Feud";
-		_newBoard.Question = "Favorite Food";
-		_newBoard.AnswerBlob = $"Pizza,45\nSteak,25\nFish,15\nHamburgers,8\nHot Dogs,3\nCaviar,1\nGummy Bears,1";
+		//_newBoard.Name = "Tadpooly Feud";
+		//_newBoard.Question = "Favorite Food";
+		//_newBoard.AnswerBlob = $"Pizza,45\nSteak,25\nFish,15\nHamburgers,8\nHot Dogs,3\nCaviar,1\nGummy Bears,1";
 	}
 
 	protected void CreateBoard()
