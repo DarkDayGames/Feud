@@ -237,13 +237,11 @@ app {
 
 .answer-item-text {
 	flex: 1 0 90%;
-	height: available;
 }
 
 .answer-item-points {
 	border-left: 1px solid blue;
 	width: 30px;
-	height: available;
 }
 
 
@@ -299,6 +297,57 @@ app {
 
 .vert-gap {
 	height: 5px;
+}
+
+.board-list-header {
+    display: flex;
+    flex-direction: row;
+	font-weight: bold;
+}
+
+.board-list-header div:first-child {
+	width: 200px;
+}
+
+.board-list-header div:nth-child(2){
+	width: 300px;
+}
+
+.board-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.board-list-item {
+	display: flex;
+	flex-direction: row;
+}
+
+.board-list-item div:first-child {
+	width: 200px;
+}
+
+.board-list-item div:nth-child(2) {
+	width: 300px;
+}
+
+textarea {
+	width: 500px;
+}
+
+.input-set {
+	display: flex;
+	flex-direction: row;
+	margin-bottom: 5px;
+}
+
+.input-label {
+	width: 100px;
+	margin-right: 10px;
+}
+
+.input-text {
+	width: 500px;
 }
 
 

@@ -1,5 +1,116 @@
-﻿<h3>FeudList</h3>
+﻿@page "/feud"
+@using Feud.Server.Data
+@using Feud.Server.Services
+@inject NavigationManager NavigationManager
+@inject IFeudHostService FeudHostService
+
+@if (_newBoard != null && _boards != null)
+{
+	<div>
+		<h3>Current Boards</h3>
+		<div class="board-list-header">
+			<div>Name</div>
+			<div>Question</div>
+			<div>Answer Count</div>
+		</div>
+		<div class="board-list">
+			@foreach (var board in _boards)
+			{
+				<div class="board-list-item">
+					<div>
+						<NavLink href="@($"feud/host/{@board.Id}")">@board.Name</NavLink>
+					</div>
+					<div>@board.Question</div>
+					<div>@board.Answers.Count</div>
+				</div>
+			}
+		</div>
+	</div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div>
+		<h3>New Board</h3>
+		<div>
+			<div class="input-set">
+				<div class="input-label">Name</div>
+				<input class="input-text" @bind="_newBoard.Name" type="text" maxlength="50" />
+			</div>
+			<div class="input-set">
+				<div class="input-label">Question</div>
+				<input class="input-text" @bind="_newBoard.Question" type="text" maxlength="200" />
+			</div>
+			<div class="input-set">
+				<div class="input-label">Answers</div>
+				<textarea @bind="_newBoard.AnswerBlob" maxlength="5000"></textarea>
+			</div>
+			<div>
+				<button @onclick="CreateBoard">Create</button>
+			</div>
+		</div>
+	</div>
+}
 
 @code {
+	public NewBoardViewModel _newBoard { get; set; }
 
+	public List<QuestionBoard> _boards { get; set; }
+
+	protected override void OnInitialized()
+	{
+		_newBoard = new NewBoardViewModel();
+
+		_boards = FeudHostService.GetBoardsForHost();
+
+		//TEST ONLY
+		_newBoard.Name = "Tadpooly Feud";
+		_newBoard.Question = "Favorite Food";
+		_newBoard.AnswerBlob = $"Pizza,45\nSteak,25\nFish,15\nHamburgers,8\nHot Dogs,3\nCaviar,1\nGummy Bears,1";
+	}
+
+	protected void CreateBoard()
+	{
+		var board = new QuestionBoard
+		{
+			Name = _newBoard.Name,
+			Question = _newBoard.Question
+		};
+
+		var answerLines = _newBoard.AnswerBlob.Split("\n");
+
+		var answerNumber = 1;
+
+		foreach (var answerLine in answerLines)
+		{
+			if (!string.IsNullOrEmpty(answerLine))
+			{
+				var values = answerLine.Split(',');
+
+				var answer = new QuestionAnswer
+				{
+					Number = answerNumber++,
+					Text = values[0],
+					Points = values.Length > 1 ? int.Parse(values[1]) : 0
+				};
+
+				board.Answers.Add(answer);
+			}
+		}
+
+		FeudHostService.AddBoard(board);
+		NavigationManager.NavigateTo($"feud/host/{board.Id}");
+
+	}
+
+
+
+	public class NewBoardViewModel
+	{
+		public string Name { get; set; }
+		public string Question { get; set; }
+		public string AnswerBlob { get; set; }
+	}
 }

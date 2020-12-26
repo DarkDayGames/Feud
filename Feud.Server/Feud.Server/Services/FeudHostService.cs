@@ -15,6 +15,8 @@ namespace Feud.Server.Services
 	public interface IFeudHostService
 	{
 		void AddBoard(QuestionBoard newBoard);
+		List<QuestionBoard> GetBoardsForHost();
+
 		QuestionBoard GetBoardForHost(string boardId);
 		QuestionBoard GetBoardForGuest(string boardGuestId);
 
@@ -39,6 +41,11 @@ namespace Feud.Server.Services
 		public void AddBoard(QuestionBoard newBoard)
 		{
 			Boards.Add(newBoard);
+		}
+
+		public List<QuestionBoard> GetBoardsForHost()
+		{
+			return Boards;
 		}
 
 		public QuestionBoard GetBoardForHost(string boardId)
