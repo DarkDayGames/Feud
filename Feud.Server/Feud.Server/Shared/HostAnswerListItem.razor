@@ -2,6 +2,7 @@
 @using Feud.Server.Services
 @using Microsoft.Extensions.Logging
 @inject IFeudHostService FeudHostService
+@inject NavigationManager NavigationManager
 
 @if (Answer.AnswerAvailable)
 {
@@ -24,10 +25,12 @@
 		try
 		{
 			FeudHostService.ToggleAnswer(BoardId, number);
+		
 		}
 		catch (Exception ex)
 		{
 			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
 	}
 

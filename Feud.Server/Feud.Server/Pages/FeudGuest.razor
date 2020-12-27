@@ -2,6 +2,7 @@
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
+@inject NavigationManager NavigationManager 
 @implements IDisposable
 
 @if (_board != null)
@@ -17,14 +18,22 @@
 	public string Id { get; set; }
 
 	public QuestionBoard _board { get; set; }
-	
+
 	protected override void OnInitialized()
 	{
-		_board = FeudHostService.GetBoardForGuest(Id);
+		try
+		{
+			_board = FeudHostService.GetBoardForGuest(Id);
 
-		FeudHostService.AnswerToggled += ToggleAnswer;
-		FeudHostService.StrikeToggled += ToggleStrike;
-		FeudHostService.BoardReset += Reset;
+			FeudHostService.AnswerToggled += ToggleAnswer;
+			FeudHostService.StrikeToggled += ToggleStrike;
+			FeudHostService.BoardReset += Reset;
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	public void Dispose()
@@ -37,39 +46,63 @@
 
 	protected void ToggleAnswer(object sender, BoardChangedEventArgs e)
 	{
-		var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
-
-		if (answer != null)
+		try
 		{
-			answer.AnswerVisible = !answer.AnswerVisible;
+			var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
 
-			InvokeAsync(StateHasChanged);
+			if (answer != null)
+			{
+				answer.AnswerVisible = !answer.AnswerVisible;
+
+				InvokeAsync(StateHasChanged);
+			}
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
 	}
 
 	protected void ToggleStrike(object sender, BoardChangedEventArgs e)
 	{
-		_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
+		try
+		{
+			_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
 
-		InvokeAsync(StateHasChanged);
+			InvokeAsync(StateHasChanged);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	protected void Reset(object sender, BoardChangedEventArgs e)
 	{
-		foreach (var answer in _board.Answers)
-		{
-			if (answer.AnswerAvailable)
+		try 
+		{ 
+			foreach (var answer in _board.Answers)
 			{
-				answer.AnswerVisible = false;
+				if (answer.AnswerAvailable)
+				{
+					answer.AnswerVisible = false;
+				}
 			}
-		}
 
-		foreach (var strike in _board.Strikes)
+			foreach (var strike in _board.Strikes)
+			{
+				strike.StrikeVisible = false;
+			}
+
+			InvokeAsync(StateHasChanged);
+		}
+		catch (Exception ex)
 		{
-			strike.StrikeVisible = false;
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
-
-		InvokeAsync(StateHasChanged);
 	}
 
 }

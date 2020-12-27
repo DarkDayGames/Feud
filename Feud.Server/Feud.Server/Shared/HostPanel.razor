@@ -61,7 +61,7 @@
 		catch (Exception ex)
 		{
 			Program.Logger.Log(NLog.LogLevel.Error, ex);
-			throw;
+			NavigationManager.NavigateTo("error");
 		}
 	}
 
@@ -74,7 +74,7 @@
 		catch (Exception ex)
 		{
 			Program.Logger.Log(NLog.LogLevel.Error, ex);
-			throw;
+			NavigationManager.NavigateTo("error");
 		}
 	}
 
@@ -87,7 +87,7 @@
 		catch (Exception ex)
 		{
 			Program.Logger.Log(NLog.LogLevel.Error, ex);
-			throw;
+			NavigationManager.NavigateTo("error");
 		}
 	}
 }

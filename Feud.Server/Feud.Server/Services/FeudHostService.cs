@@ -42,29 +42,12 @@ namespace Feud.Server.Services
 
 		public void AddBoard(QuestionBoard newBoard)
 		{
-			try
-			{
-				Boards.Add(newBoard);
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			Boards.Add(newBoard);
 		}
-
 		public void DeleteBoard(string boardId)
 		{
-			try
-			{
-				var boardToDelete = GetBoardForHost(boardId);
-				Boards.Remove(boardToDelete);
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			var boardToDelete = GetBoardForHost(boardId);
+			Boards.Remove(boardToDelete);
 		}
 
 		public List<QuestionBoard> GetBoardsForHost()
@@ -74,66 +57,27 @@ namespace Feud.Server.Services
 
 		public QuestionBoard GetBoardForHost(string boardId)
 		{
-			try
-			{
-				return Boards.FirstOrDefault(x => x.Id == boardId);
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			return Boards.FirstOrDefault(x => x.Id == boardId);
 		}
 
 		public QuestionBoard GetBoardForGuest(string boardGuestId)
 		{
-			try 
-			{ 
-				return Boards.FirstOrDefault(x => x.GuestId == boardGuestId);
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			return Boards.FirstOrDefault(x => x.GuestId == boardGuestId);
 		}
 
 		public void ToggleAnswer(string boardId, int number)
 		{
-			try
-			{
-				AnswerToggled?.Invoke(this, new BoardChangedEventArgs {BoardId = boardId, ItemChangedNumber = number});
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			AnswerToggled?.Invoke(this, new BoardChangedEventArgs {BoardId = boardId, ItemChangedNumber = number});
 		}
 
 		public void ToggleStrike(string boardId, int index)
 		{
-			try 
-			{ 
-				StrikeToggled?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId, ItemChangedNumber = index });
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			StrikeToggled?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId, ItemChangedNumber = index });
 		}
 
 		public void Reset(string boardId)
 		{
-			try { 
-				BoardReset?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId});
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				throw;
-			}
+			BoardReset?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId});
 		}
 	}
 }

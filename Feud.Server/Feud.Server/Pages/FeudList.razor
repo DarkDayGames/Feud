@@ -60,12 +60,21 @@
 
 	protected override void OnInitialized()
 	{
-		_boardToEdit = new EditBoardViewModel();
+		try
+		{
+			_boardToEdit = new EditBoardViewModel();
 
-		_boards = FeudHostService.GetBoardsForHost();
+			_boards = FeudHostService.GetBoardsForHost();
 
-		BoardEditingService.BoardChangesSaving += SaveBoard;
-		BoardEditingService.BoardChangesCancelled += CancelBoardSaving;
+			BoardEditingService.BoardChangesSaving += SaveBoard;
+			BoardEditingService.BoardChangesCancelled += CancelBoardSaving;
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+
 	}
 
 	public void Dispose()
@@ -76,90 +85,128 @@
 
 	public void RunBoard(string boardId)
 	{
-		NavigationManager.NavigateTo($"feud/host/{boardId}");
+		try
+		{
+			NavigationManager.NavigateTo($"feud/host/{boardId}");
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	public void EditBoard(string boardId)
 	{
-		var board = FeudHostService.GetBoardForHost(boardId);
-
-		_boardToEdit = new EditBoardViewModel
+		try
 		{
-			Id = board.Id,
-			Name = board.Name,
-			Question = board.Question
-		};
+			var board = FeudHostService.GetBoardForHost(boardId);
 
-		for (var i = 0; i < board.Answers.Count; i++)
-		{
-			_boardToEdit.Answers[i].Text = board.Answers[i].Text;
-			_boardToEdit.Answers[i].Points = board.Answers[i].Points;
+			_boardToEdit = new EditBoardViewModel
+			{
+				Id = board.Id,
+				Name = board.Name,
+				Question = board.Question
+			};
+
+			for (var i = 0; i < board.Answers.Count; i++)
+			{
+				_boardToEdit.Answers[i].Text = board.Answers[i].Text;
+				_boardToEdit.Answers[i].Points = board.Answers[i].Points;
+			}
+
+			_currentEditTab = Shared.EditBoard.TabKeys.Edit;
+
+			InvokeAsync(StateHasChanged);
 		}
-
-		_currentEditTab = Shared.EditBoard.TabKeys.Edit;
-
-		InvokeAsync(StateHasChanged);
-
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	public async Task DeleteBoard(string boardId)
 	{
-		var confirmModal = Modal.Show<ConfirmBoardDeletion>("Delete Board?");
-		var result = await confirmModal.Result;
-
-		if (!result.Cancelled)
+		try
 		{
-			FeudHostService.DeleteBoard(boardId);
+			var confirmModal = Modal.Show<ConfirmBoardDeletion>("Delete Board?");
+			var result = await confirmModal.Result;
 
-			await InvokeAsync(StateHasChanged);
+			if (!result.Cancelled)
+			{
+				FeudHostService.DeleteBoard(boardId);
+
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
 	}
 
 	public void SaveBoard(object sender, BoardSavingEventArgs e)
 	{
-		if (string.IsNullOrEmpty(e.BoardToSave.Id))
-		{
-			var board = new QuestionBoard
+		try {
+			if (string.IsNullOrEmpty(e.BoardToSave.Id))
 			{
-				Name = e.BoardToSave.Name,
-				Question = e.BoardToSave.Question,
-				Answers = e.BoardToSave.Answers
-			};
+				var board = new QuestionBoard
+				{
+					Name = e.BoardToSave.Name,
+					Question = e.BoardToSave.Question,
+					Answers = e.BoardToSave.Answers
+				};
 
-			FeudHostService.AddBoard(board);
+				FeudHostService.AddBoard(board);
 
 
-			if (e.RunBoardAfterSaving)
-			{
-				NavigationManager.NavigateTo($"feud/host/{board.Id}");
+				if (e.RunBoardAfterSaving)
+				{
+					NavigationManager.NavigateTo($"feud/host/{board.Id}");
+				}
 			}
+			else
+			{
+				var board = FeudHostService.GetBoardForHost(e.BoardToSave.Id);
+
+				board.Name = e.BoardToSave.Name;
+				board.Question = e.BoardToSave.Question;
+				board.Answers = e.BoardToSave.Answers;
+			}
+
+			_boardToEdit = new EditBoardViewModel();
+
+			_currentEditTab = Shared.EditBoard.TabKeys.Import;
+
+			InvokeAsync(StateHasChanged);
 		}
-		else
+		catch (Exception ex)
 		{
-			var board = FeudHostService.GetBoardForHost(e.BoardToSave.Id);
-
-			board.Name = e.BoardToSave.Name;
-			board.Question = e.BoardToSave.Question;
-			board.Answers = e.BoardToSave.Answers;
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
-
-		_boardToEdit = new EditBoardViewModel();
-
-		_currentEditTab = Shared.EditBoard.TabKeys.Import;
-
-		InvokeAsync(StateHasChanged);
 
 	}
 
 	public void CancelBoardSaving(object sender, EventArgs e)
 	{
-		_boardToEdit = new EditBoardViewModel();
+		try 
+		{ 
+			_boardToEdit = new EditBoardViewModel();
 
-		_currentEditTab = Shared.EditBoard.TabKeys.Import;
+			_currentEditTab = Shared.EditBoard.TabKeys.Import;
 
-		Debug.WriteLine(_currentEditTab);
+			Debug.WriteLine(_currentEditTab);
 
-		InvokeAsync(StateHasChanged);
+			InvokeAsync(StateHasChanged);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 }

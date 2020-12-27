@@ -84,13 +84,21 @@
 
 	protected override void OnInitialized()
 	{
-		if (string.IsNullOrEmpty(BoardToEdit.Id))
+		try
 		{
-			SelectImportTab();
+			if (string.IsNullOrEmpty(BoardToEdit.Id))
+			{
+				SelectImportTab();
+			}
+			else
+			{
+				SelectEditTab();
+			}
 		}
-		else
+		catch (Exception ex)
 		{
-			SelectEditTab();
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
 	}
 
@@ -112,44 +120,52 @@
 
 	protected void ImportAnswers()
 	{
-		var answerLines = BoardToEdit.AnswerBlob.Split("\n");
-
-		var answerNumber = 1;
-		var newAnswers = new List<QuestionAnswer>();
-
-		foreach (var answerLine in answerLines)
+		try
 		{
-			if (answerNumber > 10)
-			{
-				break;
-			}
+			var answerLines = BoardToEdit.AnswerBlob.Split("\n");
 
-			if (!string.IsNullOrEmpty(answerLine))
-			{
-				var values = answerLine.Split(',');
+			var answerNumber = 1;
+			var newAnswers = new List<QuestionAnswer>();
 
-				var answer = new QuestionAnswer
+			foreach (var answerLine in answerLines)
+			{
+				if (answerNumber > 10)
 				{
-					Number = answerNumber++,
-					Text = values[0],
-					Points = values.Length > 1 ? int.Parse(values[1]) : 0
-				};
+					break;
+				}
 
-				newAnswers.Add(answer);
+				if (!string.IsNullOrEmpty(answerLine))
+				{
+					var values = answerLine.Split(',');
+
+					var answer = new QuestionAnswer
+					{
+						Number = answerNumber++,
+						Text = values[0],
+						Points = values.Length > 1 ? int.Parse(values[1]) : 0
+					};
+
+					newAnswers.Add(answer);
+				}
 			}
-		}
 
-		for (var i = answerNumber; i <= 10; i++)
-		{
-			newAnswers.Add(new QuestionAnswer
+			for (var i = answerNumber; i <= 10; i++)
 			{
-				Number = i
-			});
+				newAnswers.Add(new QuestionAnswer
+				{
+					Number = i
+				});
+			}
+
+			BoardToEdit.Answers = newAnswers;
+
+			SelectEditTab();
 		}
-
-		BoardToEdit.Answers = newAnswers;
-
-		SelectEditTab();
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	protected EditBoardViewModel SanitizeBoard(EditBoardViewModel boardToSave)
@@ -193,17 +209,41 @@
 
 	protected void CreateAndRun()
 	{
-		BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), true);
+		try
+		{
+			BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), true);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	protected void Save()
 	{
-		BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), false);
+		try
+		{
+			BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), false);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 	protected void Cancel()
 	{
-		BoardEditingService.Cancel();
+		try
+		{
+			BoardEditingService.Cancel();
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
 	}
 
 }

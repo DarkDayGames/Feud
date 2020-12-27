@@ -41,10 +41,14 @@ namespace Feud.Server
 		{
 			if (env.IsDevelopment())
 			{
+				Program.Logger.Log(NLog.LogLevel.Info, "ENVIRONMENT: DEVELOPMENT");
+
 				app.UseDeveloperExceptionPage();
 			}
 			else
 			{
+				Program.Logger.Log(NLog.LogLevel.Info, "ENVIRONMENT: PRODUCTION");
+
 				app.UseExceptionHandler("/Error");
 				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 				app.UseHsts();

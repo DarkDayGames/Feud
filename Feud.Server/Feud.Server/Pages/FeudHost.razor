@@ -2,6 +2,7 @@
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 @if (_board != null)
@@ -27,46 +28,53 @@
 
 	protected override void OnInitialized()
 	{
-		if (Id == "aabbccddeeff")
+		try
 		{
-			_board = new QuestionBoard
+			if (Id == "aabbccddeeff")
 			{
-				Id = "aabbccddeeff",
-				GuestId = "aabbccddeeff",
-				Name = "Tadpooly Feud",
-				Question = "Most Colorful Animals",
-				Answers = new List<QuestionAnswer>
-			{
-					new QuestionAnswer {Number = 1, Text = "Apricot Anteaters", Points = 145},
-					new QuestionAnswer {Number = 2, Text = "Blue Baboons", Points = 125},
-					new QuestionAnswer {Number = 3, Text = "Crimson Crabs", Points = 55},
-					new QuestionAnswer {Number = 4, Text = "Daffodil Deer", Points = 28},
-					new QuestionAnswer {Number = 5, Text = "Ecrue Emus", Points = 23},
-					new QuestionAnswer {Number = 6, Text = "Fuscia Flamingos", Points = 13},
-					new QuestionAnswer {Number = 7, Text = "Green Gophers", Points = 1},
-					new QuestionAnswer {Number = 8, Text = "Hadish Hornets", Points = 1},
-					new QuestionAnswer {Number = 9, Text = "Indigo Iguanas", Points = 1},
-					new QuestionAnswer {Number = 10, Text = "Jasmine Juniper Bugs", Points = 1}
-				},
-				Strikes = new List<StrikeAnswer>
-			{
-					new StrikeAnswer(),
-					new StrikeAnswer(),
-					new StrikeAnswer(),
-				}
-			};
+				_board = new QuestionBoard
+				{
+					Id = "aabbccddeeff",
+					GuestId = "aabbccddeeff",
+					Name = "Tadpooly Feud",
+					Question = "Most Colorful Animals",
+					Answers = new List<QuestionAnswer>
+				{
+						new QuestionAnswer {Number = 1, Text = "Apricot Anteaters", Points = 145},
+						new QuestionAnswer {Number = 2, Text = "Blue Baboons", Points = 125},
+						new QuestionAnswer {Number = 3, Text = "Crimson Crabs", Points = 55},
+						new QuestionAnswer {Number = 4, Text = "Daffodil Deer", Points = 28},
+						new QuestionAnswer {Number = 5, Text = "Ecrue Emus", Points = 23},
+						new QuestionAnswer {Number = 6, Text = "Fuscia Flamingos", Points = 13},
+						new QuestionAnswer {Number = 7, Text = "Green Gophers", Points = 1},
+						new QuestionAnswer {Number = 8, Text = "Hadish Hornets", Points = 1},
+						new QuestionAnswer {Number = 9, Text = "Indigo Iguanas", Points = 1},
+						new QuestionAnswer {Number = 10, Text = "Jasmine Juniper Bugs", Points = 1}
+					},
+					Strikes = new List<StrikeAnswer>
+				{
+						new StrikeAnswer(),
+						new StrikeAnswer(),
+						new StrikeAnswer(),
+					}
+				};
 
-			FeudHostService.AddBoard(_board);
+				FeudHostService.AddBoard(_board);
+			}
+			else
+			{
+				_board = FeudHostService.GetBoardForHost(Id);
+			}
+
+			FeudHostService.AnswerToggled += ToggleAnswer;
+			FeudHostService.StrikeToggled += ToggleStrike;
+			FeudHostService.BoardReset += Reset;
 		}
-		else
+		catch (Exception ex)
 		{
-			_board = FeudHostService.GetBoardForHost(Id);
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
-
-		FeudHostService.AnswerToggled += ToggleAnswer;
-		FeudHostService.StrikeToggled += ToggleStrike;
-		FeudHostService.BoardReset += Reset;
-
 	}
 
 	public void Dispose()
@@ -80,39 +88,63 @@
 
 	protected void ToggleAnswer(object sender, BoardChangedEventArgs e)
 	{
-		var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
-
-		if (answer != null)
+		try
 		{
-			answer.AnswerVisible = !answer.AnswerVisible;
+			var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
 
-			InvokeAsync(StateHasChanged);
+			if (answer != null)
+			{
+				answer.AnswerVisible = !answer.AnswerVisible;
+
+				InvokeAsync(StateHasChanged);
+			}
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
 	}
 
 	protected void ToggleStrike(object sender, BoardChangedEventArgs e)
 	{
-		_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
+		try
+		{
+			_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
 
-		InvokeAsync(StateHasChanged);
+			InvokeAsync(StateHasChanged);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+
 	}
 
 	protected void Reset(object sender, BoardChangedEventArgs e)
 	{
-		foreach (var answer in _board.Answers)
-		{
-			if (answer.AnswerAvailable)
+		try { 
+			foreach (var answer in _board.Answers)
 			{
-				answer.AnswerVisible = false;
+				if (answer.AnswerAvailable)
+				{
+					answer.AnswerVisible = false;
+				}
 			}
-		}
 
-		foreach (var strike in _board.Strikes)
+			foreach (var strike in _board.Strikes)
+			{
+				strike.StrikeVisible = false;
+			}
+
+			InvokeAsync(StateHasChanged);
+		}
+		catch (Exception ex)
 		{
-			strike.StrikeVisible = false;
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
 		}
-
-		InvokeAsync(StateHasChanged);
 	}
 
 }
