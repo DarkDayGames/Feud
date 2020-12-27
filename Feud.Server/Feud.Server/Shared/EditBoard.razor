@@ -1,0 +1,182 @@
+﻿@using Feud.Server.Data
+@using Feud.Server.Services
+@using Feud.Server.ViewModels
+@inject IFeudHostService FeudHostService
+@inject NavigationManager NavigationManager
+@inject IBoardEditingService BoardEditingService
+
+<div>
+	<h3>@(string.IsNullOrEmpty(BoardToEdit.Id) ? "New Board" : "Edit Board")</h3>
+	<div class="input-set">
+		<div class="input-label">Name</div>
+		<input class="input-text" @bind="BoardToEdit.Name" type="text" maxlength="50" />
+		<div class="input-note">50 char max</div>
+	</div>
+	<div class="input-set">
+		<div class="input-label">Question</div>
+		<input class="input-text" @bind="BoardToEdit.Question" type="text" maxlength="200" />
+		<div class="input-note">200 char max</div>
+	</div>
+	<div class="input-set">
+		<div class="input-label">Answers</div>
+		<div class="create-answers">
+			<div name="header" class="create-answers-header">
+				<div><a style="color: #0366d6;" @onclick="SelectImportTab">Import</a></div>
+				<div><a style="color: #0366d6;" @onclick="SelectEditTab">Edit</a></div>
+			</div>
+
+			@if (CurrentTab == TabKeys.Import)
+			{
+				<div name="import" class="create-answers-import">
+					<div class="create-answers-import-blob">
+						<textarea @bind="BoardToEdit.AnswerBlob" maxlength="5000"></textarea>
+						<div class="input-note">
+							<p>
+								Each answer on one row, in the correct order 1-10.<br />
+								Optionally add the points after the answer, separated by a comma.<br />
+								5000 char max.<br />
+								Only the first 10 rows will be used.<br />
+								Example:<br />
+								Pizza,45<br />
+								Hamburgers,37<br />
+								Hot Dogs,15
+							</p>
+						</div>
+					</div>
+					<div>
+						<button @onclick="ImportAnswers">Import</button>
+					</div>
+				</div>
+			}
+			@if (CurrentTab == TabKeys.Edit)
+			{
+				<div name="edit" class="create-answers-edit">
+					<EditAnswerList Answers="BoardToEdit.Answers"></EditAnswerList>
+				</div>
+			}
+		</div>
+
+	</div>
+	<div class="vert-gap"></div>
+	<div class="vert-gap"></div>
+	<div>
+		@if (string.IsNullOrEmpty(BoardToEdit.Id))
+		{
+			<button @onclick="Save">Create</button>
+			<button @onclick="CreateAndRun">Create & Run</button>	
+		}
+		else
+		{
+			<button @onclick="Save">Save</button>
+			<button @onclick="Cancel">Cancel</button>
+		}
+	</div>
+</div>
+@code {
+
+	[Parameter]
+	public EditBoardViewModel BoardToEdit { get; set; }
+
+	[Parameter]
+	public string CurrentTab { get; set; }
+
+	protected override void OnInitialized()
+	{
+		if (string.IsNullOrEmpty(BoardToEdit.Id))
+		{
+			SelectImportTab();
+		}
+		else
+		{
+			SelectEditTab();
+		}
+	}
+
+	public void SelectImportTab()
+	{
+		CurrentTab = TabKeys.Import;
+	}
+
+	public void SelectEditTab()
+	{
+		CurrentTab = TabKeys.Edit;
+	}
+
+	public static class TabKeys
+	{
+		public const string Import = "import";
+		public const string Edit = "edit";
+	}
+
+	protected void ImportAnswers()
+	{
+		var answerLines = BoardToEdit.AnswerBlob.Split("\n");
+
+		var answerNumber = 1;
+		var newAnswers = new List<QuestionAnswer>();
+
+		foreach (var answerLine in answerLines)
+		{
+			if (answerNumber > 10)
+			{
+				break;
+			}
+
+			if (!string.IsNullOrEmpty(answerLine))
+			{
+				var values = answerLine.Split(',');
+
+				var answer = new QuestionAnswer
+				{
+					Number = answerNumber++,
+					Text = values[0],
+					Points = values.Length > 1 ? int.Parse(values[1]) : 0
+				};
+
+				newAnswers.Add(answer);
+			}
+		}
+
+		for (var i = answerNumber; i <= 10; i++)
+		{
+			newAnswers.Add(new QuestionAnswer
+			{
+				Number = i
+			});
+		}
+
+		BoardToEdit.Answers = newAnswers;
+
+		SelectEditTab();
+	}
+
+	protected QuestionBoard CreateBoard()
+	{
+		var board = new QuestionBoard
+		{
+			Name = BoardToEdit.Name,
+			Question = BoardToEdit.Question,
+			Answers = BoardToEdit.Answers
+		};
+
+		FeudHostService.AddBoard(board);
+
+		return board;
+	}
+
+	protected void CreateAndRun()
+	{
+		BoardEditingService.SaveBoard(BoardToEdit, true);
+	}
+
+	protected void Save()
+	{
+		BoardEditingService.SaveBoard(BoardToEdit, false);
+	}
+
+	protected void Cancel()
+	{
+		BoardEditingService.Cancel();
+	}
+
+}

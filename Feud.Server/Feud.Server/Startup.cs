@@ -31,6 +31,7 @@ namespace Feud.Server
 			services.AddServerSideBlazor();
 			services.AddSingleton<WeatherForecastService>();
 			services.AddSingleton<IFeudHostService, FeudHostService>();
+			services.AddSingleton<IBoardEditingService, BoardEditingService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

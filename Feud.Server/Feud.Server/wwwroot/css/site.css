@@ -331,10 +331,14 @@ app {
 }
 
 .board-list-header div:first-child {
-	width: 200px;
+	width: 77px;
 }
 
 .board-list-header div:nth-child(2){
+	width: 200px;
+}
+
+.board-list-header div:nth-child(3) {
 	width: 300px;
 }
 
@@ -349,10 +353,14 @@ app {
 }
 
 .board-list-item div:first-child {
-	width: 200px;
+
 }
 
 .board-list-item div:nth-child(2) {
+	width: 200px;
+}
+
+.board-list-item div:nth-child(3) {
 	width: 300px;
 }
 
@@ -443,5 +451,14 @@ textarea {
 
 .create-answers-edit {
 
+}
+
+.board-list-item-actions {
+	display: flex;
+	flex-direction: row;
+}
+
+.board-list-item-actions a {
+	margin-right: 10px;
 }
 

@@ -1,14 +1,18 @@
 ﻿@page "/feud"
+@using System.Diagnostics
 @using Feud.Server.Data
 @using Feud.Server.Services
+@using Feud.Server.ViewModels
 @inject NavigationManager NavigationManager
 @inject IFeudHostService FeudHostService
+@inject IBoardEditingService BoardEditingService
 
-@if (_newBoard != null && _boards != null)
+@if (_boardToEdit != null && _boards != null)
 {
 	<div>
 		<h3>Current Boards</h3>
 		<div class="board-list-header">
+			<div>&nbsp;</div>
 			<div>Name</div>
 			<div>Question</div>
 			<div>Answer Count</div>
@@ -17,9 +21,11 @@
 			@foreach (var board in _boards)
 			{
 				<div class="board-list-item">
-					<div>
-						<NavLink href="@($"feud/host/{@board.Id}")">@board.Name</NavLink>
+					<div class="board-list-item-actions">
+						<NavLink href="@($"feud/host/{@board.Id}")">Run</NavLink>
+						<NavLink style="color: #0366d6;" @onclick="(e => EditBoard(board.Id))">Edit</NavLink>
 					</div>
+					<div>@board.Name</div>
 					<div>@board.Question</div>
 					<div>@board.AnswerCount</div>
 				</div>
@@ -33,180 +39,114 @@
 	<div class="vert-gap"></div>
 	<div class="vert-gap"></div>
 	<div>
-		<h3>New Board</h3>
-		<div>
-			<div class="input-set">
-				<div class="input-label">Name</div>
-				<input class="input-text" @bind="_newBoard.Name" type="text" maxlength="50" />
-				<div class="input-note">50 char max</div>
-			</div>
-			<div class="input-set">
-				<div class="input-label">Question</div>
-				<input class="input-text" @bind="_newBoard.Question" type="text" maxlength="200" />
-				<div class="input-note">200 char max</div>
-			</div>
-			<div class="input-set">
-				<div class="input-label">Answers</div>
-				<div class="create-answers">
-					<div name="header" class="create-answers-header">
-						<div><a style="color: #0366d6;" @onclick="SelectImportTab">Import</a></div>
-						<div><a style="color: #0366d6;" @onclick="SelectEditTab">Edit</a></div>
-					</div>
-
-					@if (CurrentTab == TabKeys.Import)
-					{
-						<div name="import" class="create-answers-import">
-							<div class="create-answers-import-blob">
-								<textarea @bind="_newBoard.AnswerBlob" maxlength="5000"></textarea>
-								<div class="input-note">
-									<p>
-										Each answer on one row, in the correct order 1-10.<br />
-										Optionally add the points after the answer, separated by a comma.<br />
-										5000 char max.<br />
-										Only the first 10 rows will be used.<br />
-										Example:<br />
-										Pizza,45<br />
-										Hamburgers,37<br />
-										Hot Dogs,15
-									</p>
-								</div>
-							</div>
-							<div>
-								<button @onclick="ImportAnswers">Import</button>
-							</div>
-						</div>	
-					}
-					@if (CurrentTab == TabKeys.Edit)
-					{
-						<div name="edit" class="create-answers-edit">
-							<EditAnswerList Answers="_newBoard.Answers"></EditAnswerList>
-						</div>
-					}
-				</div>
-				
-			</div>
-			<div class="vert-gap"></div>
-			<div class="vert-gap"></div>
-			<div>
-				<button @onclick="CreateBoard">Create</button>
-			</div>
-		</div>
+		<EditBoard BoardToEdit="_boardToEdit" CurrentTab="@_currentEditTab" ></EditBoard>
 	</div>
 }
 
 @code {
 
-	public string CurrentTab { get; set; }
 
-	public NewBoardViewModel _newBoard { get; set; }
+
+	public EditBoardViewModel _boardToEdit { get; set; }
 
 	public List<QuestionBoard> _boards { get; set; }
 
+	public string _currentEditTab { get; set; }
+
+
 	protected override void OnInitialized()
 	{
-		SelectImportTab();
-
-		_newBoard = new NewBoardViewModel();
+		_boardToEdit = new EditBoardViewModel();
 
 		_boards = FeudHostService.GetBoardsForHost();
 
-		//TEST ONLY
-		//_newBoard.Name = "Tadpooly Feud";
-		//_newBoard.Question = "Favorite Food";
-		//_newBoard.AnswerBlob = $"Pizza,45\nSteak,25\nFish,15\nHamburgers,8\nHot Dogs,3\nCaviar,1\nGummy Bears,1";
+		BoardEditingService.BoardChangesSaving += SaveBoard;
+		BoardEditingService.BoardChangesCancelled += CancelBoardSaving;
 	}
 
-	protected void CreateBoard()
+	public void Dispose()
 	{
-		var board = new QuestionBoard
+		BoardEditingService.BoardChangesSaving -= SaveBoard;
+		BoardEditingService.BoardChangesCancelled -= CancelBoardSaving;
+	}
+
+	public void EditBoard(string boardId)
+	{
+		var board = FeudHostService.GetBoardForHost(boardId);
+
+		_boardToEdit = new EditBoardViewModel
 		{
-			Name = _newBoard.Name,
-			Question = _newBoard.Question,
-			Answers = _newBoard.Answers
+			Id = board.Id,
+			Name = board.Name,
+			Question = board.Question
 		};
 
+		for (var i = 0; i < board.Answers.Count; i++)
+		{
+			_boardToEdit.Answers[i].Text = board.Answers[i].Text;
+			_boardToEdit.Answers[i].Points = board.Answers[i].Points;
+		}
 
+		_currentEditTab = Shared.EditBoard.TabKeys.Edit;
 
-		FeudHostService.AddBoard(board);
-		NavigationManager.NavigateTo($"feud/host/{board.Id}");
+		InvokeAsync(StateHasChanged);
 
 	}
 
-	protected void ImportAnswers()
+	public void SaveBoard(object sender, BoardSavingEventArgs e)
 	{
-		var answerLines = _newBoard.AnswerBlob.Split("\n");
-
-		var answerNumber = 1;
-		var newAnswers = new List<QuestionAnswer>();
-
-		foreach (var answerLine in answerLines)
+		foreach (var answer in e.BoardToSave.Answers)
 		{
-			if (answerNumber > 10)
+			if (string.IsNullOrEmpty(answer.Text))
 			{
-				break;
-			}
-
-			if (!string.IsNullOrEmpty(answerLine))
-			{
-				var values = answerLine.Split(',');
-
-				var answer = new QuestionAnswer
-				{
-					Number = answerNumber++,
-					Text = values[0],
-					Points = values.Length > 1 ? int.Parse(values[1]) : 0
-				};
-
-				newAnswers.Add(answer);
+				answer.Points = 0;
 			}
 		}
 
-		for (var i = answerNumber; i <= 10; i++)
+
+		if (string.IsNullOrEmpty(e.BoardToSave.Id))
 		{
-			newAnswers.Add(new QuestionAnswer
+			var board = new QuestionBoard
 			{
-				Number = i
-			});
-		}
+				Name = e.BoardToSave.Name,
+				Question = e.BoardToSave.Question,
+				Answers = e.BoardToSave.Answers
+			};
 
-		_newBoard.Answers = newAnswers;
-
-		SelectEditTab();
-	}
-
-	public void SelectImportTab()
-	{
-		CurrentTab = TabKeys.Import;
-	}
-
-	public void SelectEditTab()
-	{
-		CurrentTab = TabKeys.Edit;
-	}
+			FeudHostService.AddBoard(board);
 
 
-
-	public static class TabKeys
-	{
-		public const string Import = "import";
-		public const string Edit = "edit";
-	}
-
-	public class NewBoardViewModel
-	{
-		public string Name { get; set; }
-		public string Question { get; set; }
-		public string AnswerBlob { get; set; }
-
-		public List<QuestionAnswer> Answers { get; set; }
-
-		public NewBoardViewModel()
-		{
-			Answers = new List<QuestionAnswer>();
-			for (var i = 1; i <= 10; i++)
+			if (e.RunBoardAfterSaving)
 			{
-				Answers.Add(new QuestionAnswer {Number = i});
+				NavigationManager.NavigateTo($"feud/host/{board.Id}");
 			}
 		}
+		else
+		{
+			var board = FeudHostService.GetBoardForHost(e.BoardToSave.Id);
+
+			board.Name = e.BoardToSave.Name;
+			board.Question = e.BoardToSave.Question;
+			board.Answers = e.BoardToSave.Answers;
+		}
+
+		_boardToEdit = new EditBoardViewModel();
+
+		_currentEditTab = Shared.EditBoard.TabKeys.Import;
+
+		InvokeAsync(StateHasChanged);
+
 	}
+
+	public void CancelBoardSaving(object sender, EventArgs e)
+	{
+		_boardToEdit = new EditBoardViewModel();
+
+		_currentEditTab = Shared.EditBoard.TabKeys.Import;
+
+		Debug.WriteLine(_currentEditTab);
+
+		InvokeAsync(StateHasChanged);
+	}
+
 }
