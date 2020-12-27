@@ -2,6 +2,7 @@
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
+@implements IDisposable
 
 @if (_board != null)
 {
@@ -35,7 +36,7 @@
 				Name = "Tadpooly Feud",
 				Question = "Most Colorful Animals",
 				Answers = new List<QuestionAnswer>
-				{
+			{
 					new QuestionAnswer {Number = 1, Text = "Apricot Anteaters", Points = 145},
 					new QuestionAnswer {Number = 2, Text = "Blue Baboons", Points = 125},
 					new QuestionAnswer {Number = 3, Text = "Crimson Crabs", Points = 55},
@@ -48,7 +49,7 @@
 					new QuestionAnswer {Number = 10, Text = "Jasmine Juniper Bugs", Points = 1}
 				},
 				Strikes = new List<StrikeAnswer>
-				{
+			{
 					new StrikeAnswer(),
 					new StrikeAnswer(),
 					new StrikeAnswer(),
@@ -65,6 +66,7 @@
 		FeudHostService.AnswerToggled += ToggleAnswer;
 		FeudHostService.StrikeToggled += ToggleStrike;
 		FeudHostService.BoardReset += Reset;
+
 	}
 
 	public void Dispose()

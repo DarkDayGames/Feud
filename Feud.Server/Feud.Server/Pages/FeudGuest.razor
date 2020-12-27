@@ -2,6 +2,7 @@
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
+@implements IDisposable
 
 @if (_board != null)
 {
@@ -16,11 +17,11 @@
 	public string Id { get; set; }
 
 	public QuestionBoard _board { get; set; }
-
+	
 	protected override void OnInitialized()
 	{
 		_board = FeudHostService.GetBoardForGuest(Id);
-		
+
 		FeudHostService.AnswerToggled += ToggleAnswer;
 		FeudHostService.StrikeToggled += ToggleStrike;
 		FeudHostService.BoardReset += Reset;
