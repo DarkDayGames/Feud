@@ -1,9 +1,11 @@
-﻿@using Feud.Server.Data
+﻿@using System.Text.Encodings.Web
+@using Feud.Server.Data
 @using Feud.Server.Services
 @using Feud.Server.ViewModels
 @inject IFeudHostService FeudHostService
 @inject NavigationManager NavigationManager
 @inject IBoardEditingService BoardEditingService
+@inject HtmlEncoder HtmlEncoder
 
 <div>
 	<h3>@(string.IsNullOrEmpty(BoardToEdit.Id) ? "New Board" : "Edit Board")</h3>
@@ -150,28 +152,53 @@
 		SelectEditTab();
 	}
 
-	protected QuestionBoard CreateBoard()
+	protected EditBoardViewModel SanitizeBoard(EditBoardViewModel boardToSave)
 	{
-		var board = new QuestionBoard
+		boardToSave.Name = Sanitize(boardToSave.Name, 50);
+		boardToSave.Question = Sanitize(boardToSave.Question, 200);
+
+		foreach (var answer in boardToSave.Answers)
 		{
-			Name = BoardToEdit.Name,
-			Question = BoardToEdit.Question,
-			Answers = BoardToEdit.Answers
-		};
+			if (string.IsNullOrEmpty(answer.Text))
+			{
+				answer.Points = 0;
+			}
+			else
+			{
+				answer.Text = Sanitize(answer.Text, 200);
+			}
+		}
 
-		FeudHostService.AddBoard(board);
-
-		return board;
+		return boardToSave;
 	}
+
+	private string Sanitize(string value, int maxLength)
+	{
+		if (!string.IsNullOrEmpty(value))
+		{
+			if (value.Contains('<') || value.Contains('>'))
+			{
+				value = HtmlEncoder.Encode(value);
+			}
+
+			if (value.Length > maxLength)
+			{
+				value = value.Substring(0, maxLength);
+			}
+		}
+
+		return value;
+	}
+
 
 	protected void CreateAndRun()
 	{
-		BoardEditingService.SaveBoard(BoardToEdit, true);
+		BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), true);
 	}
 
 	protected void Save()
 	{
-		BoardEditingService.SaveBoard(BoardToEdit, false);
+		BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), false);
 	}
 
 	protected void Cancel()

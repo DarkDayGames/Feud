@@ -1,5 +1,6 @@
 ﻿@page "/feud"
 @using System.Diagnostics
+@using System.Text.Encodings.Web
 @using Feud.Server.Data
 @using Feud.Server.Services
 @using Feud.Server.ViewModels
@@ -22,8 +23,9 @@
 			{
 				<div class="board-list-item">
 					<div class="board-list-item-actions">
-						<NavLink href="@($"feud/host/{@board.Id}")">Run</NavLink>
+						<NavLink style="color: #0366d6;" @onclick="(e => RunBoard(board.Id))">Run</NavLink>
 						<NavLink style="color: #0366d6;" @onclick="(e => EditBoard(board.Id))">Edit</NavLink>
+						<NavLink style="color: #0366d6;" @onclick="(e => DeleteBoard(board.Id))">Delete</NavLink>
 					</div>
 					<div>@board.Name</div>
 					<div>@board.Question</div>
@@ -39,7 +41,7 @@
 	<div class="vert-gap"></div>
 	<div class="vert-gap"></div>
 	<div>
-		<EditBoard BoardToEdit="_boardToEdit" CurrentTab="@_currentEditTab" ></EditBoard>
+		<EditBoard BoardToEdit="_boardToEdit" CurrentTab="@_currentEditTab"></EditBoard>
 	</div>
 }
 
@@ -53,6 +55,7 @@
 
 	public string _currentEditTab { get; set; }
 
+	[CascadingParameter] public IModalService Modal { get; set; }
 
 	protected override void OnInitialized()
 	{
@@ -68,6 +71,11 @@
 	{
 		BoardEditingService.BoardChangesSaving -= SaveBoard;
 		BoardEditingService.BoardChangesCancelled -= CancelBoardSaving;
+	}
+
+	public void RunBoard(string boardId)
+	{
+		NavigationManager.NavigateTo($"feud/host/{boardId}");
 	}
 
 	public void EditBoard(string boardId)
@@ -93,17 +101,21 @@
 
 	}
 
+	public async Task DeleteBoard(string boardId)
+	{
+		var confirmModal = Modal.Show<ConfirmBoardDeletion>("Delete Board?");
+		var result = await confirmModal.Result;
+
+		if (!result.Cancelled)
+		{
+			FeudHostService.DeleteBoard(boardId);
+
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
 	public void SaveBoard(object sender, BoardSavingEventArgs e)
 	{
-		foreach (var answer in e.BoardToSave.Answers)
-		{
-			if (string.IsNullOrEmpty(answer.Text))
-			{
-				answer.Points = 0;
-			}
-		}
-
-
 		if (string.IsNullOrEmpty(e.BoardToSave.Id))
 		{
 			var board = new QuestionBoard

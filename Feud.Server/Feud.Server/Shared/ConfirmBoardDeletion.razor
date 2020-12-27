@@ -1,0 +1,22 @@
+﻿<div>
+	Are you sure you want to delete this board?
+</div>
+<div>
+	<button @onclick="Cancel">Cancel</button>
+	<button @onclick="Confirm">Ok</button>
+</div>
+
+@code {
+
+	[CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+	public void Cancel()
+	{
+		ModalInstance.Cancel();
+	}
+
+	public void Confirm()
+	{
+		ModalInstance.Close(ModalResult.Ok("deleteConfirm"));
+	}
+}

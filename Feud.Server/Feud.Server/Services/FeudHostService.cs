@@ -15,6 +15,8 @@ namespace Feud.Server.Services
 	public interface IFeudHostService
 	{
 		void AddBoard(QuestionBoard newBoard);
+
+		void DeleteBoard(string boardId);
 		List<QuestionBoard> GetBoardsForHost();
 
 		QuestionBoard GetBoardForHost(string boardId);
@@ -43,6 +45,20 @@ namespace Feud.Server.Services
 			try
 			{
 				Boards.Add(newBoard);
+			}
+			catch (Exception ex)
+			{
+				Program.Logger.Log(NLog.LogLevel.Error, ex);
+				throw;
+			}
+		}
+
+		public void DeleteBoard(string boardId)
+		{
+			try
+			{
+				var boardToDelete = GetBoardForHost(boardId);
+				Boards.Remove(boardToDelete);
 			}
 			catch (Exception ex)
 			{

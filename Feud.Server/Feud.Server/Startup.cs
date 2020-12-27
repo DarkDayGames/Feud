@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazored.Modal;
 using Feud.Server.Services;
 
 namespace Feud.Server
@@ -29,6 +30,7 @@ namespace Feud.Server
 		{
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
+			services.AddBlazoredModal();
 			services.AddSingleton<WeatherForecastService>();
 			services.AddSingleton<IFeudHostService, FeudHostService>();
 			services.AddSingleton<IBoardEditingService, BoardEditingService>();
