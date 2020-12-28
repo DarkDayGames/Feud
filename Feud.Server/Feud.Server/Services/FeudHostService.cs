@@ -3,13 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Feud.Server.Data;
+using Microsoft.AspNetCore.Components;
 
 namespace Feud.Server.Services
 {
+	public static class BoardChangedEventActions
+	{
+		public const string AnswerToggled = "AnswerToggled";
+		public const string StrikeToggled = "StrikeToggled";
+		public const string BoardReset = "BoardReset";
+	}
+
 	public class BoardChangedEventArgs
 	{
 		public string BoardId { get; set; }
 		public int ItemChangedNumber { get; set; }
+
+		public string Action { get; set; }
 	}
 
 	public interface IFeudHostService
@@ -67,17 +77,69 @@ namespace Feud.Server.Services
 
 		public void ToggleAnswer(string boardId, int number)
 		{
-			AnswerToggled?.Invoke(this, new BoardChangedEventArgs {BoardId = boardId, ItemChangedNumber = number});
+			var answer = GetBoardForHost(boardId).Answers.FirstOrDefault(x => x.Number == number);
+
+			if (answer != null)
+			{
+				Program.Logger.Log(NLog.LogLevel.Debug,
+					$"FeudHostService.ToggleAnswer - {boardId},{number} => {!answer.AnswerVisible}, {AnswerToggled?.GetInvocationList().Length ?? 0} calls to make.");
+
+				answer.AnswerVisible = !answer.AnswerVisible;
+
+				AnswerToggled?.Invoke(this, 
+					new BoardChangedEventArgs
+					{
+						BoardId = boardId, 
+						ItemChangedNumber = number,
+						Action = BoardChangedEventActions.AnswerToggled
+					});
+			}
 		}
 
 		public void ToggleStrike(string boardId, int index)
 		{
-			StrikeToggled?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId, ItemChangedNumber = index });
+			var strikeToToggle = GetBoardForHost(boardId).Strikes[index];
+
+			Program.Logger.Log(NLog.LogLevel.Debug,
+				$"FeudHostService.ToggleStrike - {boardId},{index} => {!strikeToToggle.StrikeVisible}, {StrikeToggled?.GetInvocationList().Length ?? 0} calls to make.");
+
+			strikeToToggle.StrikeVisible = !strikeToToggle.StrikeVisible;
+			
+			StrikeToggled?.Invoke(this, 
+				new BoardChangedEventArgs
+				{
+					BoardId = boardId, 
+					ItemChangedNumber = index,
+					Action = BoardChangedEventActions.StrikeToggled
+				});
 		}
 
 		public void Reset(string boardId)
 		{
-			BoardReset?.Invoke(this, new BoardChangedEventArgs { BoardId = boardId});
+			var board = GetBoardForHost(boardId);
+
+			foreach (var answer in board.Answers)
+			{
+				if (answer.AnswerAvailable)
+				{
+					answer.AnswerVisible = false;
+				}
+			}
+
+			foreach (var strike in board.Strikes)
+			{
+				strike.StrikeVisible = false;
+			}
+
+			Program.Logger.Log(NLog.LogLevel.Debug,
+				$"FeudHostService.Reset - {boardId}, {BoardReset?.GetInvocationList().Length ?? 0} calls to make.");
+
+			BoardReset?.Invoke(this, 
+				new BoardChangedEventArgs
+				{
+					BoardId = boardId,
+					Action = BoardChangedEventActions.BoardReset
+				});
 		}
 	}
 }

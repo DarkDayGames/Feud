@@ -25,9 +25,11 @@
 		{
 			_board = FeudHostService.GetBoardForGuest(Id);
 
-			FeudHostService.AnswerToggled += ToggleAnswer;
-			FeudHostService.StrikeToggled += ToggleStrike;
-			FeudHostService.BoardReset += Reset;
+			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.OnInitialized - adding event handlers");
+
+			FeudHostService.AnswerToggled += BoardUpdated;
+			FeudHostService.StrikeToggled += BoardUpdated;
+			FeudHostService.BoardReset += BoardUpdated;
 		}
 		catch (Exception ex)
 		{
@@ -38,65 +40,23 @@
 
 	public void Dispose()
 	{
-		FeudHostService.AnswerToggled -= ToggleAnswer;
-		FeudHostService.StrikeToggled -= ToggleStrike;
-		FeudHostService.BoardReset -= Reset;
+		Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.Dispose - removing event handlers");
+
+		FeudHostService.AnswerToggled -= BoardUpdated;
+		FeudHostService.StrikeToggled -= BoardUpdated;
+		FeudHostService.BoardReset -= BoardUpdated;
 	}
 
-
-	protected void ToggleAnswer(object sender, BoardChangedEventArgs e)
+	protected void BoardUpdated(object sender, BoardChangedEventArgs e)
 	{
 		try
 		{
-			var answer = _board.Answers.FirstOrDefault(x => x.Number == e.ItemChangedNumber);
-
-			if (answer != null)
+			if (e.BoardId == _board.Id)
 			{
-				answer.AnswerVisible = !answer.AnswerVisible;
+				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.{e.Action} - {e.BoardId},{e.ItemChangedNumber}");
 
 				InvokeAsync(StateHasChanged);
 			}
-		}
-		catch (Exception ex)
-		{
-			Program.Logger.Log(NLog.LogLevel.Error, ex);
-			NavigationManager.NavigateTo("error");
-		}
-	}
-
-	protected void ToggleStrike(object sender, BoardChangedEventArgs e)
-	{
-		try
-		{
-			_board.Strikes[e.ItemChangedNumber].StrikeVisible = !_board.Strikes[e.ItemChangedNumber].StrikeVisible;
-
-			InvokeAsync(StateHasChanged);
-		}
-		catch (Exception ex)
-		{
-			Program.Logger.Log(NLog.LogLevel.Error, ex);
-			NavigationManager.NavigateTo("error");
-		}
-	}
-
-	protected void Reset(object sender, BoardChangedEventArgs e)
-	{
-		try 
-		{ 
-			foreach (var answer in _board.Answers)
-			{
-				if (answer.AnswerAvailable)
-				{
-					answer.AnswerVisible = false;
-				}
-			}
-
-			foreach (var strike in _board.Strikes)
-			{
-				strike.StrikeVisible = false;
-			}
-
-			InvokeAsync(StateHasChanged);
 		}
 		catch (Exception ex)
 		{
