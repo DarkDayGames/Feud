@@ -7,6 +7,7 @@
 @inject NavigationManager NavigationManager
 @inject IFeudHostService FeudHostService
 @inject IBoardEditingService BoardEditingService
+@inject IDateTimeService DateTimeService
 @implements IDisposable
 
 @if (_boardToEdit != null && _boards != null)
@@ -58,16 +59,20 @@
 
 	[CascadingParameter] public IModalService Modal { get; set; }
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
 			_boardToEdit = new EditBoardViewModel();
 
+			await FeudHostService.LoadBoardsAsync();
+
 			_boards = FeudHostService.GetBoardsForHost();
 
+			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudList.OnInitialized - adding event handlers");
+
 			BoardEditingService.BoardChangesSaving += SaveBoard;
-			BoardEditingService.BoardChangesCancelled += CancelBoardSaving;
+			BoardEditingService.BoardChangesCancelled += ResetBoardAfterEditing;
 		}
 		catch (Exception ex)
 		{
@@ -79,8 +84,10 @@
 
 	public void Dispose()
 	{
+		Program.Logger.Log(NLog.LogLevel.Debug, $"FeudList.OnInitialized - removing event handlers");
+
 		BoardEditingService.BoardChangesSaving -= SaveBoard;
-		BoardEditingService.BoardChangesCancelled -= CancelBoardSaving;
+		BoardEditingService.BoardChangesCancelled -= ResetBoardAfterEditing;
 	}
 
 	public void RunBoard(string boardId)
@@ -147,40 +154,21 @@
 		}
 	}
 
+
 	public void SaveBoard(object sender, BoardSavingEventArgs e)
 	{
-		try {
-			if (string.IsNullOrEmpty(e.BoardToSave.Id))
+		try
+		{
+			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudList.SaveBoard");
+
+			if (e.RunBoardAfterSaving)
 			{
-				var board = new QuestionBoard
-				{
-					Name = e.BoardToSave.Name,
-					Question = e.BoardToSave.Question,
-					Answers = e.BoardToSave.Answers
-				};
-
-				FeudHostService.AddBoard(board);
-
-
-				if (e.RunBoardAfterSaving)
-				{
-					NavigationManager.NavigateTo($"feud/host/{board.Id}");
-				}
+				NavigationManager.NavigateTo($"feud/host/{e.SavedBoard.Id}");
 			}
 			else
 			{
-				var board = FeudHostService.GetBoardForHost(e.BoardToSave.Id);
-
-				board.Name = e.BoardToSave.Name;
-				board.Question = e.BoardToSave.Question;
-				board.Answers = e.BoardToSave.Answers;
+				ResetBoardAfterEditing(null, null);
 			}
-
-			_boardToEdit = new EditBoardViewModel();
-
-			_currentEditTab = Shared.EditBoard.TabKeys.Import;
-
-			InvokeAsync(StateHasChanged);
 		}
 		catch (Exception ex)
 		{
@@ -190,15 +178,15 @@
 
 	}
 
-	public void CancelBoardSaving(object sender, EventArgs e)
+	public void ResetBoardAfterEditing(object sender, EventArgs e)
 	{
-		try 
-		{ 
+		try
+		{
+			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudList.ResetBoardAfterEditing");
+
 			_boardToEdit = new EditBoardViewModel();
 
 			_currentEditTab = Shared.EditBoard.TabKeys.Import;
-
-			Debug.WriteLine(_currentEditTab);
 
 			InvokeAsync(StateHasChanged);
 		}

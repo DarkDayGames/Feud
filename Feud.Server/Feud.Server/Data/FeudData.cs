@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Feud.Server.Data
@@ -11,13 +12,22 @@ namespace Feud.Server.Data
 		public string Name { get; set; }
 		public string Question { get; set; }
 		public List<QuestionAnswer> Answers { get; set; }
+
+		[JsonIgnore]
 		public List<StrikeAnswer> Strikes { get; set; }
+		
+		[JsonIgnore]
 		public int TotalPoints => Answers?.Where(x => x.AnswerVisible).Sum(x => x.Points) ?? 0;
 
+		[JsonIgnore]
 		public int AnswerCount => Answers.Count(x => !string.IsNullOrEmpty(x.Text));
 
 		public string GuestId { get; set; }
+
+		[JsonIgnore]
 		public string GuestUrl => $"feud/guest/{GuestId}";
+
+		public DateTime CreatedDate { get; set; }
 
 		public QuestionBoard()
 		{
@@ -38,7 +48,11 @@ namespace Feud.Server.Data
 		public int Number { get; set; }
 		public string Text { get; set; }
 		public int Points { get; set; }
+
+		[JsonIgnore]
 		public bool AnswerAvailable => !string.IsNullOrEmpty(Text);
+		
+		[JsonIgnore]
 		public bool AnswerVisible { get; set; }
 	}
 

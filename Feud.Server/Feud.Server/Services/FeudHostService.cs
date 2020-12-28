@@ -24,6 +24,7 @@ namespace Feud.Server.Services
 
 	public interface IFeudHostService
 	{
+		Task LoadBoardsAsync();
 		void AddBoard(QuestionBoard newBoard);
 
 		void DeleteBoard(string boardId);
@@ -44,11 +45,31 @@ namespace Feud.Server.Services
 
 	public class FeudHostService : IFeudHostService
 	{
+		private readonly IBoardRepositoryService _boardRepoService;
 		public event EventHandler<BoardChangedEventArgs> AnswerToggled;
 		public event EventHandler<BoardChangedEventArgs> StrikeToggled;
 		public event EventHandler<BoardChangedEventArgs> BoardReset;
 
 		public List<QuestionBoard> Boards { get; } = new List<QuestionBoard>();
+		
+		public FeudHostService(
+			IBoardRepositoryService boardRepoService)
+		{
+			_boardRepoService = boardRepoService;
+		}
+
+		public async Task LoadBoardsAsync()
+		{
+			var boards = await _boardRepoService.LoadBoardsAsync();
+
+			foreach (var board in boards)
+			{
+				if (!Boards.Exists(x => x.Id == board.Id))
+				{
+					Boards.Add(board);
+				}
+			}
+		}
 
 		public void AddBoard(QuestionBoard newBoard)
 		{
@@ -58,6 +79,8 @@ namespace Feud.Server.Services
 		{
 			var boardToDelete = GetBoardForHost(boardId);
 			Boards.Remove(boardToDelete);
+
+			_boardRepoService.Delete(boardToDelete);
 		}
 
 		public List<QuestionBoard> GetBoardsForHost()

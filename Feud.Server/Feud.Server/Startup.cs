@@ -33,6 +33,8 @@ namespace Feud.Server
 			services.AddBlazoredModal();
 			services.AddSingleton<IFeudHostService, FeudHostService>();
 			services.AddSingleton<IBoardEditingService, BoardEditingService>();
+			services.AddSingleton<IBoardRepositoryService, BoardRepositoryService>();
+			services.AddTransient<IDateTimeService, DateTimeService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
