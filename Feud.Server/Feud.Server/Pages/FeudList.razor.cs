@@ -113,7 +113,14 @@ namespace Feud.Server.Pages
 				{
 					FeudHostService.DeleteBoard(boardId);
 
-					await InvokeAsync(StateHasChanged);
+					if (boardId == BoardToEdit.Id)
+					{
+						ResetBoardAfterEditing(null,null);
+					}
+					else
+					{
+						await InvokeAsync(StateHasChanged);
+					}
 				}
 			}
 			catch (Exception ex)
