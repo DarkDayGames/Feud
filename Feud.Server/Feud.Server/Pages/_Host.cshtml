@@ -36,15 +36,16 @@
 <script src="_content/Blazored.Modal/blazored.modal.js"></script>
 <script>
 	window.clipboardCopy = {
-		copyText: function (text) {
-			navigator.clipboard.writeText(text).then(function () {
-				
-			})
-				.catch(function (error) {
-					alert(error);
-				});
-		}
-	};
+        copyText: function (text) {
+            if (navigator && navigator.clipboard) {
+	            navigator.clipboard
+		            .writeText(text)
+		            .then(function() {})
+		            .catch(function(error) { alert(error); });
+            } else {
+	            alert('Clipboard is not available.');
+            }
+        }};
 </script>
 </body>
 </html>
