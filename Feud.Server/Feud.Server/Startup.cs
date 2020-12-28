@@ -31,7 +31,6 @@ namespace Feud.Server
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddBlazoredModal();
-			services.AddSingleton<WeatherForecastService>();
 			services.AddSingleton<IFeudHostService, FeudHostService>();
 			services.AddSingleton<IBoardEditingService, BoardEditingService>();
 		}
