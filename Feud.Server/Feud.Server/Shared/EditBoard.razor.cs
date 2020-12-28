@@ -115,16 +115,30 @@ namespace Feud.Server.Shared
 			boardToSave.Name = Sanitize(boardToSave.Name, 50);
 			boardToSave.Question = Sanitize(boardToSave.Question, 200);
 
+			var emptyAnswer = boardToSave.Answers.FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Text));
+			while (emptyAnswer != null)
+			{
+				boardToSave.Answers.Remove(emptyAnswer);
+
+				for (int i = 0; i < boardToSave.Answers.Count; i++)
+				{
+					boardToSave.Answers[i].Number = i + 1;
+				}
+
+				emptyAnswer = boardToSave.Answers.FirstOrDefault(x => string.IsNullOrWhiteSpace(x.Text));
+			}
+
 			foreach (var answer in boardToSave.Answers)
 			{
-				if (string.IsNullOrEmpty(answer.Text))
+				answer.Text = Sanitize(answer.Text, 200);
+			}
+
+			for (var i = boardToSave.Answers.Count + 1; i <= 10; i++)
+			{
+				boardToSave.Answers.Add(new QuestionAnswer
 				{
-					answer.Points = 0;
-				}
-				else
-				{
-					answer.Text = Sanitize(answer.Text, 200);
-				}
+					Number = i
+				});
 			}
 
 			return boardToSave;
