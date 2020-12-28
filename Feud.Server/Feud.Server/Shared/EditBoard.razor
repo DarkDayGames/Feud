@@ -26,10 +26,10 @@
 		<div class="input-label">Answers</div>
 		<div class="create-answers">
 			<div name="header" class="create-answers-header">
-				<div><a style="color: #0366d6;" @onclick="SelectImportTab">Import</a></div>
-				<div><a style="color: #0366d6;" @onclick="SelectEditTab">Edit</a></div>
+				<div class="@(CurrentTab == TabKeys.Import ? "" : "unselected-answer-header")"><a style="color: #0366d6;" @onclick="SelectImportTab">Import</a></div>
+				<div class="@(CurrentTab == TabKeys.Edit ? "" : "unselected-answer-header")"><a style="color: #0366d6;" @onclick="SelectEditTab">Edit</a></div>
 			</div>
-
+			<div class="vert-gap"></div>
 			@if (CurrentTab == TabKeys.Import)
 			{
 				<div name="import" class="create-answers-import">

@@ -433,12 +433,22 @@ textarea {
 }
 
 .create-answers-header {
-	display: flex;
-	flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 
 .create-answers-header div {
-    margin-right: 20px;
+    width: 70px;
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.unselected-answer-header {
+	border-bottom: 1px solid black;
 }
 
 .create-answers-import {

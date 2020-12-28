@@ -6,6 +6,7 @@ using System.Text.Encodings.Web;
 using Feud.Server.Data;
 using Feud.Server.Services;
 using Feud.Server.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 
 
@@ -25,7 +26,7 @@ namespace Feud.Server.Shared
 		[Parameter]
 		public string CurrentTab { get; set; }
 
-		public List<string> Failures { get; set; }
+		public List<string> Failures { get; set; } = new List<string>();
 
 		protected override void OnInitialized()
 		{
