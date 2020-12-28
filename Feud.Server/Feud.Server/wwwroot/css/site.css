@@ -470,3 +470,7 @@ textarea {
 	font-weight: bold;
 }
 
+.edit-action-buttons button {
+	margin-right: 5px;
+}
+

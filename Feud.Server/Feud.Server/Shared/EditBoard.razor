@@ -64,16 +64,16 @@
 	</div>
 	<div class="vert-gap"></div>
 	<div class="vert-gap"></div>
-	<div>
+	<div class="edit-action-buttons">
 		@if (string.IsNullOrEmpty(BoardToEdit.Id))
 		{
 			<button @onclick="(e => Save())">Create</button>
-			<button @onclick="(e => Save(true))">Create & Run</button>	
+			<button @onclick="(e => Save(true))">Create & Run</button>
 		}
 		else
 		{
 			<button @onclick="(e => Save())">Save</button>
-			<button @onclick="Cancel">Cancel</button>
 		}
+		<button @onclick="Cancel">Cancel</button>
 	</div>
 </div>

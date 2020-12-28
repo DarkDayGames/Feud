@@ -189,6 +189,8 @@ namespace Feud.Server.Shared
 		{
 			try
 			{
+				Failures.Clear();
+
 				BoardEditingService.Cancel();
 			}
 			catch (Exception ex)
