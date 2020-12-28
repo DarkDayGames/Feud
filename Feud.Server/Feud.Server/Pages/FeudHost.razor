@@ -5,17 +5,17 @@
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
-@if (_board != null)
+@if (Board != null)
 {
 	<h3>Feud Host</h3>
 	<div class="hostpage">
 		<div class="hostpage-guest">
 			<h4>Guest View</h4>
-			<Board QuestionBoard="_board"></Board>
+			<Board QuestionBoard="Board"></Board>
 		</div>
 		<div class="hostpage-host">
 			<h4>Host View</h4>
-			<HostPanel QuestionBoard="_board"></HostPanel>
+			<HostPanel QuestionBoard="Board"></HostPanel>
 		</div>
 	</div>
 }
@@ -24,47 +24,13 @@
 	[Parameter]
 	public string Id { get; set; }
 
-	public QuestionBoard _board { get; set; }
+	public QuestionBoard Board { get; set; }
 
 	protected override void OnInitialized()
 	{
 		try
 		{
-			if (Id == "aabbccddeeff")
-			{
-				_board = new QuestionBoard
-				{
-					Id = "aabbccddeeff",
-					GuestId = "aabbccddeeff",
-					Name = "Tadpooly Feud",
-					Question = "Most Colorful Animals",
-					Answers = new List<QuestionAnswer>
-				{
-						new QuestionAnswer {Number = 1, Text = "Apricot Anteaters", Points = 145},
-						new QuestionAnswer {Number = 2, Text = "Blue Baboons", Points = 125},
-						new QuestionAnswer {Number = 3, Text = "Crimson Crabs", Points = 55},
-						new QuestionAnswer {Number = 4, Text = "Daffodil Deer", Points = 28},
-						new QuestionAnswer {Number = 5, Text = "Ecrue Emus", Points = 23},
-						new QuestionAnswer {Number = 6, Text = "Fuscia Flamingos", Points = 13},
-						new QuestionAnswer {Number = 7, Text = "Green Gophers", Points = 1},
-						new QuestionAnswer {Number = 8, Text = "Hadish Hornets", Points = 1},
-						new QuestionAnswer {Number = 9, Text = "Indigo Iguanas", Points = 1},
-						new QuestionAnswer {Number = 10, Text = "Jasmine Juniper Bugs", Points = 1}
-					},
-					Strikes = new List<StrikeAnswer>
-				{
-						new StrikeAnswer(),
-						new StrikeAnswer(),
-						new StrikeAnswer(),
-					}
-				};
-
-				FeudHostService.AddBoard(_board);
-			}
-			else
-			{
-				_board = FeudHostService.GetBoardForHost(Id);
-			}
+			Board = FeudHostService.GetBoardForHost(Id);
 
 			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudHost.OnInitialized - adding event handlers");
 
@@ -93,7 +59,7 @@
 	{
 		try
 		{
-			if (e.BoardId == _board.Id)
+			if (e.BoardId == Board.Id)
 			{
 				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudHost.{e.Action} - {e.BoardId},{e.ItemChangedNumber}");
 

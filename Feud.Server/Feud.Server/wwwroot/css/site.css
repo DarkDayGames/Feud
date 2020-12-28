@@ -194,10 +194,13 @@ app {
 	margin-right: 20px;
 }
 
+.hostpage-host {
+
+}
 
 .answer-list {
-	display: flex; 
-	flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .answer-pair {

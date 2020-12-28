@@ -5,10 +5,10 @@
 @inject NavigationManager NavigationManager 
 @implements IDisposable
 
-@if (_board != null)
+@if (Board != null)
 {
 	<div>
-		<Board QuestionBoard="_board"></Board>
+		<Board QuestionBoard="Board"></Board>
 	</div>
 }
 
@@ -17,13 +17,13 @@
 	[Parameter]
 	public string Id { get; set; }
 
-	public QuestionBoard _board { get; set; }
+	public QuestionBoard Board { get; set; }
 
 	protected override void OnInitialized()
 	{
 		try
 		{
-			_board = FeudHostService.GetBoardForGuest(Id);
+			Board = FeudHostService.GetBoardForGuest(Id);
 
 			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.OnInitialized - adding event handlers");
 
@@ -51,7 +51,7 @@
 	{
 		try
 		{
-			if (e.BoardId == _board.Id)
+			if (e.BoardId == Board.Id)
 			{
 				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.{e.Action} - {e.BoardId},{e.ItemChangedNumber}");
 
