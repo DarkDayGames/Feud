@@ -35,6 +35,7 @@ namespace Feud.Server
 			services.AddSingleton<IBoardEditingService, BoardEditingService>();
 			services.AddSingleton<IBoardRepositoryService, BoardRepositoryService>();
 			services.AddTransient<IDateTimeService, DateTimeService>();
+			services.AddTransient<IBoardValidationService, BoardValidationService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

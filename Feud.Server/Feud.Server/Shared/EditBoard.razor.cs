@@ -17,12 +17,15 @@ namespace Feud.Server.Shared
 		[Inject] public NavigationManager NavigationManager { get; set; }
 		[Inject] public IBoardEditingService BoardEditingService { get; set; }
 		[Inject] public HtmlEncoder HtmlEncoder { get; set; }
+		[Inject] public IBoardValidationService BoardValidationService { get; set; }
 
 		[Parameter]
 		public EditBoardViewModel BoardToEdit { get; set; }
 
 		[Parameter]
 		public string CurrentTab { get; set; }
+
+		public List<string> Failures { get; set; }
 
 		protected override void OnInitialized()
 		{
@@ -161,26 +164,19 @@ namespace Feud.Server.Shared
 
 			return value;
 		}
-
-
-		protected void CreateAndRun()
+		
+		protected void Save(bool? runBoardAfterSaving = false)
 		{
 			try
 			{
-				BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), true);
-			}
-			catch (Exception ex)
-			{
-				Program.Logger.Log(NLog.LogLevel.Error, ex);
-				NavigationManager.NavigateTo("error");
-			}
-		}
+				var boardToSave = SanitizeBoard(BoardToEdit);
 
-		protected void Save()
-		{
-			try
-			{
-				BoardEditingService.SaveBoard(SanitizeBoard(BoardToEdit), false);
+				Failures = BoardValidationService.Validate(boardToSave);
+
+				if (!Failures.Any())
+				{
+					BoardEditingService.SaveBoard(boardToSave, runBoardAfterSaving != null && runBoardAfterSaving.Value);
+				}
 			}
 			catch (Exception ex)
 			{

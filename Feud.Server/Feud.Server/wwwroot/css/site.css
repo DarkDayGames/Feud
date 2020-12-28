@@ -465,3 +465,8 @@ textarea {
 	margin-right: 10px;
 }
 
+.validation-failure-list {
+	color: red;
+	font-weight: bold;
+}
+

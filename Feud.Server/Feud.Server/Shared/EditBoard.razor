@@ -1,5 +1,17 @@
 ﻿<div>
 	<h3>@(string.IsNullOrEmpty(BoardToEdit.Id) ? "New Board" : "Edit Board")</h3>
+	<div class="validation-failure-list">
+		@if (Failures != null && Failures.Any())
+		{
+			<p>
+				@foreach (var failure in Failures)
+				{
+					@failure
+					<br/>
+				}
+			</p>
+		}
+	</div>
 	<div class="input-set">
 		<div class="input-label">Name</div>
 		<input class="input-text" @bind="BoardToEdit.Name" type="text" maxlength="50" />
@@ -55,12 +67,12 @@
 	<div>
 		@if (string.IsNullOrEmpty(BoardToEdit.Id))
 		{
-			<button @onclick="Save">Create</button>
-			<button @onclick="CreateAndRun">Create & Run</button>	
+			<button @onclick="(e => Save())">Create</button>
+			<button @onclick="(e => Save(true))">Create & Run</button>	
 		}
 		else
 		{
-			<button @onclick="Save">Save</button>
+			<button @onclick="(e => Save())">Save</button>
 			<button @onclick="Cancel">Cancel</button>
 		}
 	</div>
