@@ -19,6 +19,7 @@ namespace Feud.Server.Services
 		public string BoardId { get; set; }
 		public int ItemChangedNumber { get; set; }
 
+		public bool NewValue { get; set; }
 		public string Action { get; set; }
 	}
 
@@ -114,7 +115,8 @@ namespace Feud.Server.Services
 					{
 						BoardId = boardId, 
 						ItemChangedNumber = number,
-						Action = BoardChangedEventActions.AnswerToggled
+						Action = BoardChangedEventActions.AnswerToggled,
+						NewValue = answer.AnswerVisible
 					});
 			}
 		}
@@ -133,7 +135,8 @@ namespace Feud.Server.Services
 				{
 					BoardId = boardId, 
 					ItemChangedNumber = index,
-					Action = BoardChangedEventActions.StrikeToggled
+					Action = BoardChangedEventActions.StrikeToggled,
+					NewValue = strikeToToggle.StrikeVisible
 				});
 		}
 

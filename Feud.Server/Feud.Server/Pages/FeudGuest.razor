@@ -2,11 +2,14 @@
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
-@inject NavigationManager NavigationManager 
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 @if (Board != null)
 {
+	<audio id="buzzerSound" src="/media/buzzer.mp3"></audio>
+	<audio id="revealSound" src="/media/reveal_answer.mp3"></audio>
 	<div>
 		<Board QuestionBoard="Board"></Board>
 	</div>
@@ -56,6 +59,15 @@
 				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.{e.Action} - {e.BoardId},{e.ItemChangedNumber}");
 
 				InvokeAsync(StateHasChanged);
+
+				if (e.Action == BoardChangedEventActions.AnswerToggled && e.NewValue)
+				{
+					JSRuntime.InvokeAsync<string>("PlayReveal");
+				}
+				else if (e.Action == BoardChangedEventActions.StrikeToggled && e.NewValue)
+				{
+					JSRuntime.InvokeAsync<string>("PlayBuzzer");
+				}
 			}
 		}
 		catch (Exception ex)

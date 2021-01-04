@@ -45,7 +45,16 @@
             } else {
 	            alert('Clipboard is not available.');
             }
-        }};
+        }
+    };
+
+	window.PlayBuzzer = function() {
+		document.getElementById('buzzerSound').play();
+    }
+
+	window.PlayReveal = function() {
+		document.getElementById('revealSound').play();
+	}
 </script>
 </body>
 </html>
