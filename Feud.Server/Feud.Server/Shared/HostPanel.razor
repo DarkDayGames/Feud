@@ -2,6 +2,7 @@
 @using Feud.Server.Services
 @inject IJSRuntime JSRuntime
 @inject IFeudHostService FeudHostService
+@inject IFeudGameService FeudGameService
 @inject NavigationManager NavigationManager
 
 <div class="host-panel">
@@ -42,13 +43,17 @@
 	<div class="vert-gap"></div>
 	<div class="vert-gap"></div>
 	<div class="reset-button">
-		<button @onclick="Reset">Reset</button>
+		<button @onclick="ResetBoard">Reset Board</button>
+		<button @onclick="ResetBuzzer">Reset Buzzer</button>
 	</div>
 </div>
 
 @code {
 	[Parameter]
 	public QuestionBoard QuestionBoard { get; set; }
+
+	[Parameter]
+	public FeudGame Game { get; set; }
 
 	public string FullGuestUrl => NavigationManager.BaseUri + QuestionBoard.GuestUrl;
 
@@ -65,11 +70,24 @@
 		}
 	}
 
-	protected void Reset()
+	protected void ResetBoard()
 	{
 		try
 		{
 			FeudHostService.Reset(QuestionBoard.Id);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+
+	protected void ResetBuzzer()
+	{
+		try
+		{
+			FeudGameService.ResetBuzzer(QuestionBoard.Id);
 		}
 		catch (Exception ex)
 		{

@@ -32,6 +32,7 @@ namespace Feud.Server
 			services.AddServerSideBlazor();
 			services.AddBlazoredModal();
 			services.AddSingleton<IFeudHostService, FeudHostService>();
+			services.AddSingleton<IFeudGameService, FeudGameService>();
 			services.AddSingleton<IBoardEditingService, BoardEditingService>();
 			services.AddSingleton<IBoardRepositoryService, BoardRepositoryService>();
 			services.AddTransient<IDateTimeService, DateTimeService>();

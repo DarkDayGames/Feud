@@ -1,14 +1,56 @@
 ﻿@using Feud.Server.Data
+@using Feud.Server.Services
+@using Feud.Server.ViewModels
+@inject IFeudGameService FeudGameService
 <div class="guest-board">
 	<div class="board-div">
 		<h1>@QuestionBoard.Name</h1>
 	</div>
-	<div class="board-div">
-		<span>@QuestionBoard.Question</span>
-	</div>
-	<div class="board-div">
-		<span>@QuestionBoard.TotalPoints</span>	
-	</div>
+	@if (!Game.IndexOfPlayerPlaying.HasValue)
+	{
+		<div class="board-div">
+			<div class="player-name @(Player1BuzzedIn ? "buzzed-in" : "")">
+				<div>
+					<span>@Player1Name</span>
+				</div>
+				@if (Mode == BoardViewMode.Host && (Player1BuzzedIn || Player2BuzzedIn))
+				{
+					<div>
+						<button @onclick="@(e => ChoosingToPlay(@Player1Name))">Play</button>
+					</div>
+				}
+			</div>
+			<div class="buzzer">
+				@if (Mode == BoardViewMode.Player)
+				{
+					<button @onclick="Buzz" disabled="@(Player1BuzzedIn || Player2BuzzedIn)">Buzz</button>
+				}
+			</div>
+			<div class="player-name @(Player2BuzzedIn ? "buzzed-in" : "")">
+				<div>
+					<span>@Player2Name</span>
+				</div>
+				@if (Mode == BoardViewMode.Host && (Player1BuzzedIn || Player2BuzzedIn))
+				{
+					<div>
+						<button @onclick="@(e => ChoosingToPlay(@Player2Name))">Play</button>
+					</div>
+				}
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="board-div">
+			<span>@QuestionBoard.Question</span>
+		</div>
+		<div class="board-div">
+			<span>@QuestionBoard.TotalPoints</span>
+		</div>
+		<div class="board-div">
+			<span>@NameOfPlayingPlayer is playing</span>
+		</div>
+	}
 	<div class="board-div">
 		<StrikeList Strikes="QuestionBoard.Strikes"></StrikeList>
 	</div>
@@ -18,4 +60,40 @@
 @code {
 	[Parameter]
 	public QuestionBoard QuestionBoard { get; set; }
+
+	[Parameter]
+	public FeudGame Game { get; set; }
+
+	[Parameter]
+	public string CurrentPlayerName { get; set; }
+
+	[Parameter]
+	public BoardViewMode Mode { get; set; }
+
+	public bool Player1BuzzedIn => Game?.BuzzedInPlayers != null && Game.BuzzedInPlayers.Count >= 1 && Game.BuzzedInPlayers[0] == 0;
+
+	public bool Player2BuzzedIn => Game?.BuzzedInPlayers != null && Game.BuzzedInPlayers.Count >= 1 && Game.BuzzedInPlayers[0] == 1;
+
+
+	public string Player1Name => Game?.Players != null && Game.Players.Count >= 1 ? Game.Players[0].Name : "Waiting for Player 1...";
+
+	public string Player2Name => Game?.Players != null && Game.Players.Count >= 2 ? Game.Players[1].Name : "Waiting for Player 2...";
+
+	public string NameOfPlayingPlayer => Game?.Players != null && Game.IndexOfPlayerPlaying.HasValue && Game.IndexOfPlayerPlaying.Value < Game.Players.Count ? Game.Players[Game.IndexOfPlayerPlaying.Value].Name : "";
+
+	public void Buzz()
+	{
+		if (!string.IsNullOrEmpty(CurrentPlayerName))
+		{
+			FeudGameService.BuzzIn(QuestionBoard.GuestId, CurrentPlayerName);
+		}
+	}
+
+	public void ChoosingToPlay(string playerName)
+	{
+		if (!string.IsNullOrEmpty(playerName))
+		{
+			FeudGameService.ChoosingToPlay(QuestionBoard.Id, playerName);
+		}
+	}
 }

@@ -1,0 +1,79 @@
+﻿@page "/feud/gueststart/{id}"
+@using Feud.Server.Services
+@inject NavigationManager NavigationManager
+@inject IFeudGameService FeudGameService 
+
+<h3>FeudGuestStart</h3>
+<div>
+	<div class="validation-failure-list">
+		@if (!string.IsNullOrEmpty(LoginFailureMessage))
+		{
+			<p>
+				@LoginFailureMessage
+			</p>
+		}
+	</div>
+	<div class="input-set">
+		<div class="input-label">Room Code</div>
+		<input class="input-text" @bind="RoomCode" type="text" maxlength="20" />
+	</div>
+	<div class="input-set">
+		<div class="input-label">Name</div>
+		<input class="input-text" @bind="GuestName" type="text" maxlength="20" />
+	</div>
+	<div>
+		<button @onclick="Play" disabled=@NotReadyToPlay>Play</button>
+	</div>
+</div>
+
+
+@code {
+
+	[Parameter]
+	public string Id { get; set; }
+
+	public string RoomCode { get; set; }
+	public string GuestName { get; set; }
+	public string LoginFailureMessage { get; set; }
+
+	public bool NotReadyToPlay => string.IsNullOrEmpty(RoomCode) || string.IsNullOrEmpty(GuestName);
+
+	protected override void OnInitialized()
+	{
+		try
+		{
+			RoomCode = Id;
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+
+	protected void Play()
+	{
+		try
+		{
+			if (!string.IsNullOrWhiteSpace(RoomCode)
+				&& !string.IsNullOrEmpty(GuestName))
+			{
+				var result = FeudGameService.LoginPlayer(RoomCode, GuestName);
+
+				if (string.IsNullOrEmpty(result))
+				{
+					NavigationManager.NavigateTo($"feud/guest/{RoomCode}/{GuestName}");
+				}
+				else
+				{
+					LoginFailureMessage = result;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+}

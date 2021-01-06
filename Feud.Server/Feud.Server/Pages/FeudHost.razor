@@ -2,6 +2,7 @@
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
+@inject IFeudGameService FeudGameService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @implements IDisposable
@@ -14,11 +15,11 @@
 	<div class="hostpage">
 		<div class="hostpage-guest">
 			<h4>Guest View</h4>
-			<Board QuestionBoard="Board"></Board>
+			<Board QuestionBoard="Board" Game="Game" Mode="@BoardViewMode.Host"></Board>
 		</div>
 		<div class="hostpage-host">
 			<h4>Host View</h4>
-			<HostPanel QuestionBoard="Board"></HostPanel>
+			<HostPanel QuestionBoard="Board" Game="Game"></HostPanel>
 		</div>
 	</div>
 }
@@ -29,17 +30,25 @@
 
 	public QuestionBoard Board { get; set; }
 
+	public FeudGame Game { get; set; }
+
 	protected override void OnInitialized()
 	{
 		try
 		{
 			Board = FeudHostService.GetBoardForHost(Id);
 
+			Game = FeudGameService.LoadGame(Id);
+
 			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudHost.OnInitialized - adding event handlers");
 
 			FeudHostService.AnswerToggled += BoardUpdated;
 			FeudHostService.StrikeToggled += BoardUpdated;
 			FeudHostService.BoardReset += BoardUpdated;
+			FeudGameService.PlayerAdded += GameUpdated;
+			FeudGameService.PlayerBuzzedIn += GameUpdated;
+			FeudGameService.BuzzerReset += GameUpdated;
+			FeudGameService.PlayerChosenToPlay += GameUpdated;
 		}
 		catch (Exception ex)
 		{
@@ -55,6 +64,10 @@
 		FeudHostService.AnswerToggled -= BoardUpdated;
 		FeudHostService.StrikeToggled -= BoardUpdated;
 		FeudHostService.BoardReset -= BoardUpdated;
+		FeudGameService.PlayerAdded -= GameUpdated;
+		FeudGameService.PlayerBuzzedIn -= GameUpdated;
+		FeudGameService.BuzzerReset -= GameUpdated;
+		FeudGameService.PlayerChosenToPlay -= GameUpdated;
 	}
 
 
@@ -77,6 +90,24 @@
 					JSRuntime.InvokeAsync<string>("PlayBuzzer");
 				}
 
+			}
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+
+	protected void GameUpdated(object sender, GameChangedEventArgs e)
+	{
+		try
+		{
+			if (e.BoardId == Board.Id)
+			{
+				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudHost.{e.Action} - {e.BoardId},{e.PlayerIndex}");
+
+				InvokeAsync(StateHasChanged);
 			}
 		}
 		catch (Exception ex)

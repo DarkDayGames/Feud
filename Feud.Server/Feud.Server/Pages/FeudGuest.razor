@@ -1,7 +1,8 @@
-﻿@page "/feud/guest/{id}"
+﻿@page "/feud/guest/{id}/{playername}"
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
+@inject IFeudGameService FeudGameService 
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @implements IDisposable
@@ -11,7 +12,7 @@
 	<audio id="buzzerSound" src="/media/buzzer.mp3"></audio>
 	<audio id="revealSound" src="/media/reveal_answer.mp3"></audio>
 	<div>
-		<Board QuestionBoard="Board"></Board>
+		<Board QuestionBoard="Board" Game="Game" Mode="@BoardViewMode.Player" CurrentPlayerName="@PlayerName"></Board>
 	</div>
 }
 
@@ -20,7 +21,12 @@
 	[Parameter]
 	public string Id { get; set; }
 
+	[Parameter]
+	public string PlayerName { get; set; }
+
 	public QuestionBoard Board { get; set; }
+
+	public FeudGame Game { get; set; }
 
 	protected override void OnInitialized()
 	{
@@ -28,11 +34,17 @@
 		{
 			Board = FeudHostService.GetBoardForGuest(Id);
 
+			Game = FeudGameService.LoadGame(Board.Id);
+
 			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.OnInitialized - adding event handlers");
 
 			FeudHostService.AnswerToggled += BoardUpdated;
 			FeudHostService.StrikeToggled += BoardUpdated;
 			FeudHostService.BoardReset += BoardUpdated;
+			FeudGameService.PlayerAdded += GameUpdated;
+			FeudGameService.PlayerBuzzedIn += GameUpdated;
+			FeudGameService.BuzzerReset += GameUpdated;
+			FeudGameService.PlayerChosenToPlay += GameUpdated;
 		}
 		catch (Exception ex)
 		{
@@ -48,6 +60,10 @@
 		FeudHostService.AnswerToggled -= BoardUpdated;
 		FeudHostService.StrikeToggled -= BoardUpdated;
 		FeudHostService.BoardReset -= BoardUpdated;
+		FeudGameService.PlayerAdded -= GameUpdated;
+		FeudGameService.PlayerBuzzedIn -= GameUpdated;
+		FeudGameService.BuzzerReset -= GameUpdated;
+		FeudGameService.PlayerChosenToPlay -= GameUpdated;
 	}
 
 	protected void BoardUpdated(object sender, BoardChangedEventArgs e)
@@ -68,6 +84,24 @@
 				{
 					JSRuntime.InvokeAsync<string>("PlayBuzzer");
 				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+
+	protected void GameUpdated(object sender, GameChangedEventArgs e)
+	{
+		try
+		{
+			if (e.BoardId == Board.Id)
+			{
+				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.{e.Action} - {e.BoardId},{e.PlayerIndex}");
+
+				InvokeAsync(StateHasChanged);
 			}
 		}
 		catch (Exception ex)
