@@ -1,4 +1,4 @@
-﻿@page "/feud/host/{id}"
+﻿@page "/host/feud/{id}"
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
@@ -9,12 +9,16 @@
 
 @if (Board != null)
 {
-	<audio id="buzzerSound" src="/media/buzzer.mp3"></audio>
-	<audio id="revealSound" src="/media/reveal_answer.mp3"></audio>
+	<audio id="buzzerSound" src="media/buzzer.mp3"></audio>
+	<audio id="revealSound" src="media/reveal_answer.mp3"></audio>
+	<audio id="ringInSound" src="media/ringin.mp3"></audio>
+	<div id="strike-overlay">
+		<div id="strike-overlay-content">X</div>
+	</div>
 	<h3>Feud Host</h3>
 	<div class="hostpage">
 		<div class="hostpage-guest">
-			<h4>Guest View</h4>
+			<h4>Player View</h4>
 			<Board QuestionBoard="Board" Game="Game" Mode="@BoardViewMode.Host"></Board>
 		</div>
 		<div class="hostpage-host">
@@ -48,6 +52,7 @@
 			FeudGameService.PlayerAdded += GameUpdated;
 			FeudGameService.PlayerBuzzedIn += GameUpdated;
 			FeudGameService.BuzzerReset += GameUpdated;
+			FeudGameService.PlayersReset += GameUpdated;
 			FeudGameService.PlayerChosenToPlay += GameUpdated;
 		}
 		catch (Exception ex)
@@ -67,6 +72,7 @@
 		FeudGameService.PlayerAdded -= GameUpdated;
 		FeudGameService.PlayerBuzzedIn -= GameUpdated;
 		FeudGameService.BuzzerReset -= GameUpdated;
+		FeudGameService.PlayersReset -= GameUpdated;
 		FeudGameService.PlayerChosenToPlay -= GameUpdated;
 	}
 
@@ -85,9 +91,15 @@
 				{
 					JSRuntime.InvokeAsync<string>("PlayReveal");
 				}
-				else if (e.Action == BoardChangedEventActions.StrikeToggled && e.NewValue)
+				else if (e.Action == BoardChangedEventActions.StrikeBuzzOnly || (e.Action == BoardChangedEventActions.StrikeToggled && e.NewValue))
 				{
-					JSRuntime.InvokeAsync<string>("PlayBuzzer");
+					var numberOfStrikesToDisplay = 1;
+					if (e.Action == BoardChangedEventActions.StrikeToggled)
+					{
+						numberOfStrikesToDisplay = Board.Strikes.Count(x => x.StrikeVisible);
+					}
+
+					JSRuntime.InvokeAsync<string>("PlayBuzzer", new String('X', numberOfStrikesToDisplay));
 				}
 
 			}
@@ -108,6 +120,11 @@
 				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudHost.{e.Action} - {e.BoardId},{e.PlayerIndex}");
 
 				InvokeAsync(StateHasChanged);
+
+				if (e.Action == GameChangedEventActions.PlayerBuzzedIn)
+				{
+					JSRuntime.InvokeAsync<string>("PlayRingIn");
+				}
 			}
 		}
 		catch (Exception ex)

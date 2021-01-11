@@ -11,6 +11,7 @@ namespace Feud.Server.Services
 		public const string PlayerAdded = "PlayerAdded";
 		public const string PlayerBuzzedIn = "PlayerBuzzedIn";
 		public const string BuzzerReset = "BuzzerReset";
+		public const string PlayersReset = "PlayersReset";
 		public const string PlayerChosenToPlay = "PlayerChosenToPlay";
 	}
 
@@ -35,11 +36,14 @@ namespace Feud.Server.Services
 
 		void ResetBuzzer(string boardId);
 
+		void ResetPlayers(string boardId);
+
 		void ChoosingToPlay(string boardId, string playerName);
 
 		event EventHandler<GameChangedEventArgs> PlayerAdded;
 		event EventHandler<GameChangedEventArgs> PlayerBuzzedIn;
 		event EventHandler<GameChangedEventArgs> BuzzerReset;
+		event EventHandler<GameChangedEventArgs> PlayersReset;
 		event EventHandler<GameChangedEventArgs> PlayerChosenToPlay;
 	}
 
@@ -54,6 +58,7 @@ namespace Feud.Server.Services
 		public event EventHandler<GameChangedEventArgs> PlayerAdded;
 		public event EventHandler<GameChangedEventArgs> PlayerBuzzedIn;
 		public event EventHandler<GameChangedEventArgs> BuzzerReset;
+		public event EventHandler<GameChangedEventArgs> PlayersReset;
 		public event EventHandler<GameChangedEventArgs> PlayerChosenToPlay;
 
 		public List<FeudGame> Games { get; } = new List<FeudGame>();
@@ -175,6 +180,26 @@ namespace Feud.Server.Services
 				{
 					BoardId = boardId,
 					Action = GameChangedEventActions.BuzzerReset
+				});
+			}
+		}
+
+		public void ResetPlayers(string boardId)
+		{
+			var board = _hostService.GetBoardForHost(boardId);
+
+			var game = Games.FirstOrDefault(x => x.BoardId == board.Id);
+
+			if (game != null)
+			{
+				game.IndexOfPlayerPlaying = null;
+				game.BuzzedInPlayers.Clear();
+				game.Players.Clear();
+
+				PlayersReset?.Invoke(this, new GameChangedEventArgs
+				{
+					BoardId = boardId,
+					Action = GameChangedEventActions.PlayersReset
 				});
 			}
 		}

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
 using Blazored.Modal;
 using Feud.Server.Services;
 
@@ -31,12 +32,15 @@ namespace Feud.Server
 			services.AddRazorPages();
 			services.AddServerSideBlazor();
 			services.AddBlazoredModal();
+			services.AddBlazoredLocalStorage();
 			services.AddSingleton<IFeudHostService, FeudHostService>();
 			services.AddSingleton<IFeudGameService, FeudGameService>();
 			services.AddSingleton<IBoardEditingService, BoardEditingService>();
 			services.AddSingleton<IBoardRepositoryService, BoardRepositoryService>();
 			services.AddTransient<IDateTimeService, DateTimeService>();
 			services.AddTransient<IBoardValidationService, BoardValidationService>();
+
+			services.AddScoped<ICurrentPlayerNameService, CurrentPlayerNameService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

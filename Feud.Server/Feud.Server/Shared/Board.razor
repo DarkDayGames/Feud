@@ -1,11 +1,20 @@
 ﻿@using Feud.Server.Data
+@using Feud.Server.Extensions
 @using Feud.Server.Services
 @using Feud.Server.ViewModels
 @inject IFeudGameService FeudGameService
+@inject IJSRuntime JSRuntime 
 <div class="guest-board">
 	<div class="board-div">
 		<h1>@QuestionBoard.Name</h1>
 	</div>
+	@if (Game.IndexOfPlayerPlaying.HasValue || Mode == BoardViewMode.Host)
+	{ 
+		<div class="board-div">
+			<span>@QuestionBoard.Question</span>
+		</div>
+	}
+
 	@if (!Game.IndexOfPlayerPlaying.HasValue)
 	{
 		<div class="board-div">
@@ -23,7 +32,7 @@
 			<div class="buzzer">
 				@if (Mode == BoardViewMode.Player)
 				{
-					<button @onclick="Buzz" disabled="@(Player1BuzzedIn || Player2BuzzedIn)">Buzz</button>
+					<button @ref="buzzerButton" @onclick="Buzz" disabled="@(Player1BuzzedIn || Player2BuzzedIn)">Buzzer</button>
 				}
 			</div>
 			<div class="player-name @(Player2BuzzedIn ? "buzzed-in" : "")">
@@ -41,9 +50,6 @@
 	}
 	else
 	{
-		<div class="board-div">
-			<span>@QuestionBoard.Question</span>
-		</div>
 		<div class="board-div">
 			<span>@QuestionBoard.TotalPoints</span>
 		</div>
@@ -70,6 +76,8 @@
 	[Parameter]
 	public BoardViewMode Mode { get; set; }
 
+	private ElementReference buzzerButton;
+
 	public bool Player1BuzzedIn => Game?.BuzzedInPlayers != null && Game.BuzzedInPlayers.Count >= 1 && Game.BuzzedInPlayers[0] == 0;
 
 	public bool Player2BuzzedIn => Game?.BuzzedInPlayers != null && Game.BuzzedInPlayers.Count >= 1 && Game.BuzzedInPlayers[0] == 1;
@@ -80,6 +88,16 @@
 	public string Player2Name => Game?.Players != null && Game.Players.Count >= 2 ? Game.Players[1].Name : "Waiting for Player 2...";
 
 	public string NameOfPlayingPlayer => Game?.Players != null && Game.IndexOfPlayerPlaying.HasValue && Game.IndexOfPlayerPlaying.Value < Game.Players.Count ? Game.Players[Game.IndexOfPlayerPlaying.Value].Name : "";
+
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// Focus the element
+			await JSRuntime.FocusAsync(buzzerButton);
+		}
+	}
 
 	public void Buzz()
 	{

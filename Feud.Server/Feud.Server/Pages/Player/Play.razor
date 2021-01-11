@@ -1,9 +1,14 @@
-﻿@page "/feud/gueststart/{id}"
+﻿@page "/play/{id}"
+@using Feud.Server.Data
 @using Feud.Server.Services
 @inject NavigationManager NavigationManager
 @inject IFeudGameService FeudGameService 
+@inject ICurrentPlayerNameService CurrentPlayerNameService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
-<h3>FeudGuestStart</h3>
+<div>
+	<h3>Sign In</h3>
+</div>
 <div>
 	<div class="validation-failure-list">
 		@if (!string.IsNullOrEmpty(LoginFailureMessage))
@@ -15,15 +20,15 @@
 	</div>
 	<div class="input-set">
 		<div class="input-label">Room Code</div>
-		<input class="input-text" @bind="RoomCode" type="text" maxlength="20" />
+		<input class="input-text" @bind="RoomCode" @bind:event="oninput" type="text" maxlength="20" />
 	</div>
 	<div class="input-set">
 		<div class="input-label">Name</div>
-		<input class="input-text" @bind="GuestName" type="text" maxlength="20" />
+		<input class="input-text" @bind="GuestName" @bind:event="oninput" type="text" maxlength="20" />
 	</div>
-	<div>
-		<button @onclick="Play" disabled=@NotReadyToPlay>Play</button>
-	</div>
+</div>
+<div>
+	<button @onclick="SignIn" disabled=@NotReadyToPlay>Play</button>
 </div>
 
 
@@ -51,7 +56,22 @@
 		}
 	}
 
-	protected void Play()
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			CurrentPlayerNameService.Name = await LocalStorage.GetItemAsync<string>(StorageKey.PlayerName);
+
+			GuestName = CurrentPlayerNameService.Name;
+
+			if (!string.IsNullOrEmpty(GuestName))
+			{
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+	}
+
+	protected async Task SignIn()
 	{
 		try
 		{
@@ -62,7 +82,12 @@
 
 				if (string.IsNullOrEmpty(result))
 				{
-					NavigationManager.NavigateTo($"feud/guest/{RoomCode}/{GuestName}");
+					CurrentPlayerNameService.Name = GuestName;
+					await LocalStorage.SetItemAsync(StorageKey.PlayerName, GuestName);
+
+					var test = await LocalStorage.GetItemAsync<string>(StorageKey.PlayerName);
+
+					NavigationManager.NavigateTo(string.Format(PageRoutes.PlayFeud, RoomCode));
 				}
 				else
 				{

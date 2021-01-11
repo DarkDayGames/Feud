@@ -42,7 +42,7 @@ namespace Feud.Server.Data
 
 		public string GuestId { get; set; }
 
-		[JsonIgnore] public string GuestUrl => $"feud/gueststart/{GuestId}";
+		[JsonIgnore] public string GuestUrl => string.Format(PageRoutes.Play, GuestId);
 
 		public DateTime CreatedDate { get; set; }
 

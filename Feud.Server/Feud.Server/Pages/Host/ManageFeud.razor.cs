@@ -11,9 +11,9 @@ using Feud.Server.Services;
 using Feud.Server.Shared;
 using Feud.Server.ViewModels;
 
-namespace Feud.Server.Pages
+namespace Feud.Server.Pages.Host
 {
-	public partial class FeudList : ComponentBase, IDisposable
+	public partial class ManageFeud : ComponentBase, IDisposable
 	{
 		[Inject] public NavigationManager NavigationManager { get; set; }
 		[Inject] public IFeudHostService FeudHostService { get; set; }
@@ -63,7 +63,7 @@ namespace Feud.Server.Pages
 		{
 			try
 			{
-				NavigationManager.NavigateTo($"feud/host/{boardId}");
+				NavigationManager.NavigateTo(string.Format(PageRoutes.HostFeud, boardId));
 			}
 			catch (Exception ex)
 			{
@@ -139,7 +139,7 @@ namespace Feud.Server.Pages
 
 				if (e.RunBoardAfterSaving)
 				{
-					NavigationManager.NavigateTo($"feud/host/{e.SavedBoard.Id}");
+					NavigationManager.NavigateTo(string.Format(PageRoutes.HostFeud, e.SavedBoard.Id));
 				}
 				else
 				{

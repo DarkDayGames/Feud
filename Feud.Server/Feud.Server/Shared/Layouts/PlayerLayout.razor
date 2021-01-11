@@ -1,0 +1,15 @@
+﻿@using Feud.Server.Services
+@inherits LayoutComponentBase
+@inject ICurrentPlayerNameService CurrentPlayerNameService
+
+<div class="main">
+	<div class="content px-4 player-container">
+		@Body
+	</div>
+</div>
+
+
+@code
+{
+	public string @PlayerHeader => CurrentPlayerNameService.Name;
+}

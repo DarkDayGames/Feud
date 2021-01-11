@@ -39,12 +39,16 @@
 				<button class="@(QuestionBoard.Strikes[index].StrikeVisible ? "strike-shown" : "strike-hidden")" @onclick="@(e => ToggleStrike(index))">Strike @(index+1)</button>
 			</div>
 		}
+		<div class="strike-list-item-button">
+			<button class="" @onclick="@(e => BuzzOnly())">Strike Buzz Only</button>
+		</div>
 	</div>
 	<div class="vert-gap"></div>
 	<div class="vert-gap"></div>
 	<div class="reset-button">
 		<button @onclick="ResetBoard">Reset Board</button>
 		<button @onclick="ResetBuzzer">Reset Buzzer</button>
+		<button @onclick="ResetPlayers">Reset Players</button>
 	</div>
 </div>
 
@@ -62,6 +66,19 @@
 		try
 		{
 			FeudHostService.ToggleStrike(QuestionBoard.Id, index);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+
+	protected void BuzzOnly()
+	{
+		try
+		{
+			FeudHostService.ToggleStrike(QuestionBoard.Id, -1);
 		}
 		catch (Exception ex)
 		{
@@ -88,6 +105,19 @@
 		try
 		{
 			FeudGameService.ResetBuzzer(QuestionBoard.Id);
+		}
+		catch (Exception ex)
+		{
+			Program.Logger.Log(NLog.LogLevel.Error, ex);
+			NavigationManager.NavigateTo("error");
+		}
+	}
+
+	protected void ResetPlayers()
+	{
+		try
+		{
+			FeudGameService.ResetPlayers(QuestionBoard.Id);
 		}
 		catch (Exception ex)
 		{

@@ -31,7 +31,14 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-
+    
+<script>
+	function BlazorFocusElement(element) {
+		if (element instanceof HTMLElement) {
+			element.focus();
+		}
+	}
+</script>
 <script src="_framework/blazor.server.js"></script>
 <script src="_content/Blazored.Modal/blazored.modal.js"></script>
 <script>
@@ -48,12 +55,19 @@
         }
     };
 
-	window.PlayBuzzer = function() {
-		document.getElementById('buzzerSound').play();
+    window.PlayBuzzer = function (strikesToDisplay) {
+		document.getElementById("strike-overlay-content").innerHTML = strikesToDisplay;
+        document.getElementById("strike-overlay").style.display = "block";
+		setTimeout(() => { document.getElementById("strike-overlay").style.display = "none"; }, 1000);
+        document.getElementById('buzzerSound').play();
     }
 
 	window.PlayReveal = function() {
 		document.getElementById('revealSound').play();
+    }
+
+	window.PlayRingIn = function() {
+		document.getElementById('ringInSound').play();
 	}
 </script>
 </body>

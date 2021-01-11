@@ -12,6 +12,7 @@ namespace Feud.Server.Services
 		public const string AnswerToggled = "AnswerToggled";
 		public const string StrikeToggled = "StrikeToggled";
 		public const string BoardReset = "BoardReset";
+		public const string StrikeBuzzOnly = "StrikeBuzzOnly";
 	}
 
 	public class BoardChangedEventArgs
@@ -123,21 +124,37 @@ namespace Feud.Server.Services
 
 		public void ToggleStrike(string boardId, int index)
 		{
-			var strikeToToggle = GetBoardForHost(boardId).Strikes[index];
+			if (index >= 0)
+			{
+				var strikeToToggle = GetBoardForHost(boardId).Strikes[index];
 
-			Program.Logger.Log(NLog.LogLevel.Debug,
-				$"FeudHostService.ToggleStrike - {boardId},{index} => {!strikeToToggle.StrikeVisible}, {StrikeToggled?.GetInvocationList().Length ?? 0} calls to make.");
+				Program.Logger.Log(NLog.LogLevel.Debug,
+					$"FeudHostService.ToggleStrike - {boardId},{index} => {!strikeToToggle.StrikeVisible}, {StrikeToggled?.GetInvocationList().Length ?? 0} calls to make.");
 
-			strikeToToggle.StrikeVisible = !strikeToToggle.StrikeVisible;
-			
-			StrikeToggled?.Invoke(this, 
-				new BoardChangedEventArgs
-				{
-					BoardId = boardId, 
-					ItemChangedNumber = index,
-					Action = BoardChangedEventActions.StrikeToggled,
-					NewValue = strikeToToggle.StrikeVisible
-				});
+				strikeToToggle.StrikeVisible = !strikeToToggle.StrikeVisible;
+
+				StrikeToggled?.Invoke(this,
+					new BoardChangedEventArgs
+					{
+						BoardId = boardId,
+						ItemChangedNumber = index,
+						Action = BoardChangedEventActions.StrikeToggled,
+						NewValue = strikeToToggle.StrikeVisible
+					});
+			}
+			else
+			{
+				Program.Logger.Log(NLog.LogLevel.Debug,
+					$"FeudHostService.ToggleStrike - {boardId},{index} => buzz only, {StrikeToggled?.GetInvocationList().Length ?? 0} calls to make.");
+
+				StrikeToggled?.Invoke(this,
+					new BoardChangedEventArgs
+					{
+						BoardId = boardId,
+						ItemChangedNumber = index,
+						Action = BoardChangedEventActions.StrikeBuzzOnly
+					});
+			}
 		}
 
 		public void Reset(string boardId)

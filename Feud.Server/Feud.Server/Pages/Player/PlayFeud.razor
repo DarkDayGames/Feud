@@ -1,16 +1,23 @@
-﻿@page "/feud/guest/{id}/{playername}"
+﻿@page "/play/feud/{id}"
+@using Blazored.LocalStorage
 @using Feud.Server.Data
 @using Feud.Server.Services
 @inject IFeudHostService FeudHostService
-@inject IFeudGameService FeudGameService 
+@inject IFeudGameService FeudGameService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ICurrentPlayerNameService CurrentPlayerNameService
+@inject ILocalStorageService LocalStorage
 @implements IDisposable
 
 @if (Board != null)
 {
-	<audio id="buzzerSound" src="/media/buzzer.mp3"></audio>
-	<audio id="revealSound" src="/media/reveal_answer.mp3"></audio>
+	<audio id="buzzerSound" src="media/buzzer.mp3"></audio>
+	<audio id="revealSound" src="media/reveal_answer.mp3"></audio>
+	<audio id="ringInSound" src="media/ringin.mp3"></audio>
+	<div id="strike-overlay">
+		<div id="strike-overlay-content">X</div>
+	</div>
 	<div>
 		<Board QuestionBoard="Board" Game="Game" Mode="@BoardViewMode.Player" CurrentPlayerName="@PlayerName"></Board>
 	</div>
@@ -21,7 +28,6 @@
 	[Parameter]
 	public string Id { get; set; }
 
-	[Parameter]
 	public string PlayerName { get; set; }
 
 	public QuestionBoard Board { get; set; }
@@ -36,6 +42,8 @@
 
 			Game = FeudGameService.LoadGame(Board.Id);
 
+			PlayerName = CurrentPlayerNameService.Name;
+
 			Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.OnInitialized - adding event handlers");
 
 			FeudHostService.AnswerToggled += BoardUpdated;
@@ -44,13 +52,34 @@
 			FeudGameService.PlayerAdded += GameUpdated;
 			FeudGameService.PlayerBuzzedIn += GameUpdated;
 			FeudGameService.BuzzerReset += GameUpdated;
+			FeudGameService.PlayersReset += GameUpdated;
 			FeudGameService.PlayerChosenToPlay += GameUpdated;
+
 		}
 		catch (Exception ex)
 		{
 			Program.Logger.Log(NLog.LogLevel.Error, ex);
 			NavigationManager.NavigateTo("error");
 		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (string.IsNullOrEmpty(PlayerName))
+		{
+			PlayerName = await LocalStorage.GetItemAsync<string>(StorageKey.PlayerName);
+
+			if (string.IsNullOrEmpty(PlayerName))
+			{
+				NavigationManager.NavigateTo(string.Format(PageRoutes.Play, Id));
+			}
+			else
+			{
+				CurrentPlayerNameService.Name = PlayerName;
+			}
+		}
+
+		base.OnAfterRender(firstRender);
 	}
 
 	public void Dispose()
@@ -63,6 +92,7 @@
 		FeudGameService.PlayerAdded -= GameUpdated;
 		FeudGameService.PlayerBuzzedIn -= GameUpdated;
 		FeudGameService.BuzzerReset -= GameUpdated;
+		FeudGameService.PlayersReset -= GameUpdated;
 		FeudGameService.PlayerChosenToPlay -= GameUpdated;
 	}
 
@@ -80,9 +110,15 @@
 				{
 					JSRuntime.InvokeAsync<string>("PlayReveal");
 				}
-				else if (e.Action == BoardChangedEventActions.StrikeToggled && e.NewValue)
+				else if (e.Action == BoardChangedEventActions.StrikeBuzzOnly || (e.Action == BoardChangedEventActions.StrikeToggled && e.NewValue))
 				{
-					JSRuntime.InvokeAsync<string>("PlayBuzzer");
+					var numberOfStrikesToDisplay = 1;
+					if (e.Action == BoardChangedEventActions.StrikeToggled)
+					{
+						numberOfStrikesToDisplay = Board.Strikes.Count(x => x.StrikeVisible);
+					}
+
+					JSRuntime.InvokeAsync<string>("PlayBuzzer", new String('X', numberOfStrikesToDisplay));
 				}
 			}
 		}
@@ -102,6 +138,11 @@
 				Program.Logger.Log(NLog.LogLevel.Debug, $"FeudGuest.{e.Action} - {e.BoardId},{e.PlayerIndex}");
 
 				InvokeAsync(StateHasChanged);
+
+				if (e.Action == GameChangedEventActions.PlayerBuzzedIn)
+				{
+					JSRuntime.InvokeAsync<string>("PlayRingIn");
+				}
 			}
 		}
 		catch (Exception ex)
